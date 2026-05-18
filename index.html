@@ -726,6 +726,87 @@
           </div>
         </div>
       </div>
+
+      <!-- 时间戳知识介绍 -->
+      <div class="card ts-intro">
+        <div class="card-title">关于 Unix 时间戳</div>
+        <div class="ts-intro-content">
+          <h4>什么是 Unix 时间戳？</h4>
+          <p>Unix 时间戳（Unix Timestamp），也称为 POSIX 时间或 Epoch 时间，是一种时间表示方式。它定义为从 <strong>UTC 1970年1月1日 00:00:00</strong>（称为 Unix 纪元，Unix Epoch）起至目标时刻所经过的秒数，不计闰秒。</p>
+
+          <h4>基本特性</h4>
+          <ul>
+            <li><strong>起点</strong>：UTC 1970-01-01 00:00:00（Unix Epoch）</li>
+            <li><strong>单位</strong>：秒（部分系统使用毫秒、微秒或纳秒）</li>
+            <li><strong>时区无关</strong>：时间戳本身是 UTC 时间，与时区无关，同一时刻全球的 Unix 时间戳相同</li>
+            <li><strong>不计闰秒</strong>：Unix 时间不包含闰秒，每天固定为 86400 秒</li>
+            <li><strong>有符号整数</strong>：负值表示 1970 年之前的时间</li>
+          </ul>
+
+          <h4>精度与存储</h4>
+          <table class="ts-info-table">
+            <thead>
+              <tr><th>精度</th><th>单位</th><th>示例值</th><th>常见使用场景</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>秒级</td><td>s</td><td>1700000000</td><td>大多数 Unix/Linux 系统、C 语言 time()</td></tr>
+              <tr><td>毫秒级</td><td>ms</td><td>1700000000000</td><td>JavaScript Date.now()、Java System.currentTimeMillis()</td></tr>
+              <tr><td>微秒级</td><td>μs</td><td>1700000000000000</td><td>Python time.time()（浮点数）、数据库</td></tr>
+              <tr><td>纳秒级</td><td>ns</td><td>1700000000000000000</td><td>Go time.Now().UnixNano()、高精度计时</td></tr>
+            </tbody>
+          </table>
+
+          <h4>2038 年问题</h4>
+          <p>使用 32 位有符号整数存储的 Unix 时间戳，最大值为 2<sup>31</sup>−1 = 2147483647，对应 <strong>UTC 2038年1月19日 03:14:07</strong>。超过此时刻后将发生整数溢出。现代 64 位系统已使用 64 位整数存储时间戳，可表示约 2920 亿年，不存在此问题。</p>
+
+          <h4>常用编程语言获取时间戳</h4>
+          <div class="ts-code-examples">
+            <div class="ts-code-block">
+              <span class="ts-code-lang">JavaScript</span>
+              <code>Math.floor(Date.now() / 1000)</code>
+            </div>
+            <div class="ts-code-block">
+              <span class="ts-code-lang">Python</span>
+              <code>import time; int(time.time())</code>
+            </div>
+            <div class="ts-code-block">
+              <span class="ts-code-lang">Java</span>
+              <code>System.currentTimeMillis() / 1000</code>
+            </div>
+            <div class="ts-code-block">
+              <span class="ts-code-lang">C/C++</span>
+              <code>#include &lt;time.h&gt;  time(NULL)</code>
+            </div>
+            <div class="ts-code-block">
+              <span class="ts-code-lang">Go</span>
+              <code>time.Now().Unix()</code>
+            </div>
+            <div class="ts-code-block">
+              <span class="ts-code-lang">PHP</span>
+              <code>time()</code>
+            </div>
+            <div class="ts-code-block">
+              <span class="ts-code-lang">Shell</span>
+              <code>date +%s</code>
+            </div>
+          </div>
+
+          <h4>常见时间戳参考值</h4>
+          <table class="ts-info-table">
+            <thead>
+              <tr><th>时间戳（秒）</th><th>对应时间（UTC）</th><th>说明</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>0</td><td>1970-01-01 00:00:00</td><td>Unix 纪元起点</td></tr>
+              <tr><td>1000000000</td><td>2001-09-09 01:46:40</td><td>10 亿秒</td></tr>
+              <tr><td>1234567890</td><td>2009-02-13 23:31:30</td><td>顺序数字时间戳</td></tr>
+              <tr><td>1500000000</td><td>2017-07-14 02:40:00</td><td>15 亿秒</td></tr>
+              <tr><td>2000000000</td><td>2033-05-18 03:33:20</td><td>20 亿秒</td></tr>
+              <tr><td>2147483647</td><td>2038-01-19 03:14:07</td><td>32位有符号整数最大值</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </main>
 
