@@ -1,0 +1,11 @@
+# IDE
+.vscode/
+.idea/
+.claude/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Node (if added later)
+node_modules/

@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>嵌入式开发工具箱</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="stylesheet" href="css/style.css">
+  <!-- crypto-js 用于 MD5/SHA/AES，断网时可替换为 lib/crypto-js.min.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js" defer></script>
+</head>
+<body>
+
+  <!-- 顶部导航栏 -->
+  <header class="header">
+    <div class="header-inner">
+      <span class="logo">&#9881; 嵌入式开发工具箱</span>
+      <span class="header-sub">在线计算 &middot; 浏览器本地运行 &middot; 无需服务器</span>
+    </div>
+  </header>
+
+  <!-- 主内容区 -->
+  <main class="container">
+    <!-- 一级分类标签 -->
+    <div class="category-tabs" id="categoryTabs">
+      <button class="category-tab active" data-category="checksum">数据校验</button>
+      <button class="category-tab" data-category="encoding">编码转换</button>
+      <button class="category-tab" data-category="string">字符串处理</button>
+      <button class="category-tab" data-category="crypto">哈希/加密</button>
+    </div>
+
+    <!-- ==================== 数据校验类 ==================== -->
+    <div class="category-content active" data-category="checksum">
+      <div class="sub-tabs" id="subTabs-checksum">
+        <button class="sub-tab active" data-tool="bcc">BCC/XOR校验</button>
+        <button class="sub-tab" data-tool="crc">CRC校验</button>
+        <button class="sub-tab" data-tool="sum">累加和Checksum</button>
+      </div>
+
+      <!-- BCC/XOR 校验 -->
+      <div class="tool-panel active" data-tool="bcc">
+        <div class="card">
+          <div class="card-title">BCC / XOR 异或校验</div>
+          <div class="input-group">
+            <label>输入Hex数据</label>
+            <textarea id="bcc-input" rows="4" placeholder="01 02 03 04 05&#10;支持格式：010203 / 0x01,0x02,0x03"></textarea>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-primary" onclick="ChecksumTools.calcBCC()">计算</button>
+            <button class="btn btn-secondary" onclick="ChecksumTools.clearBCC()">清空</button>
+            <button class="btn btn-outline" onclick="ChecksumTools.fillBCCExample()">示例</button>
+          </div>
+          <div class="result-area">
+            <div class="result-label">BCC 结果</div>
+            <div class="result-box" id="bcc-result">-</div>
+            <button class="copy-btn" onclick="Utils.copy('bcc-result')">复制</button>
+          </div>
+          <div class="result-area">
+            <div class="result-label">异或过程</div>
+            <div class="result-box" id="bcc-process" style="font-size:13px;white-space:pre-wrap;">-</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CRC 校验 -->
+      <div class="tool-panel" data-tool="crc">
+        <div class="card">
+          <div class="card-title">CRC 循环冗余校验</div>
+          <div class="input-group">
+            <label>输入Hex数据</label>
+            <textarea id="crc-input" rows="4" placeholder="31 32 33 34 35 36 37 38 39&#10;（即字符串 123456789）"></textarea>
+          </div>
+          <div class="input-group">
+            <label>CRC 变体</label>
+            <select id="crc-variant" onchange="ChecksumTools.onCRCVariantChange()">
+              <option value="CRC-8">CRC-8 (多项式0x07)</option>
+              <option value="CRC-8/MAXIM">CRC-8/MAXIM (多项式0x31)</option>
+              <option value="CRC-16/IBM">CRC-16/IBM (多项式0x8005)</option>
+              <option value="CRC-16/MODBUS">CRC-16/MODBUS (多项式0x8005)</option>
+              <option value="CRC-16/CCITT">CRC-16/CCITT (多项式0x1021)</option>
+              <option value="CRC-16/CCITT-FALSE">CRC-16/CCITT-FALSE (多项式0x1021)</option>
+              <option value="CRC-16/XMODEM">CRC-16/XMODEM (多项式0x1021)</option>
+              <option value="CRC-32">CRC-32 (多项式0x04C11DB7)</option>
+              <option value="custom">自定义参数...</option>
+            </select>
+          </div>
+          <!-- 自定义CRC参数区 -->
+          <div id="crc-custom-params" class="custom-params hidden">
+            <div class="input-row">
+              <div class="input-group flex-1">
+                <label>位宽</label>
+                <div class="radio-group">
+                  <label><input type="radio" name="crc-width" value="8"> 8</label>
+                  <label><input type="radio" name="crc-width" value="16" checked> 16</label>
+                  <label><input type="radio" name="crc-width" value="32"> 32</label>
+                </div>
+              </div>
+              <div class="input-group flex-1">
+                <label>多项式 (Hex)</label>
+                <input type="text" id="crc-poly" value="1021" placeholder="如 1021">
+              </div>
+            </div>
+            <div class="input-row">
+              <div class="input-group flex-1">
+                <label>初始值 (Hex)</label>
+                <input type="text" id="crc-init" value="0000" placeholder="如 0000">
+              </div>
+              <div class="input-group flex-1">
+                <label>结果异或值 (Hex)</label>
+                <input type="text" id="crc-xorout" value="0000" placeholder="如 0000">
+              </div>
+            </div>
+            <div class="input-row">
+              <div class="input-group">
+                <label><input type="checkbox" id="crc-refin"> 输入反转 (RefIn)</label>
+                <label><input type="checkbox" id="crc-refout"> 输出反转 (RefOut)</label>
+              </div>
+            </div>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-primary" onclick="ChecksumTools.calcCRC()">计算</button>
+            <button class="btn btn-secondary" onclick="ChecksumTools.clearCRC()">清空</button>
+            <button class="btn btn-outline" onclick="ChecksumTools.fillCRCExample()">示例 (123456789)</button>
+          </div>
+          <div class="result-area">
+            <div class="result-label">CRC 结果</div>
+            <div class="result-box" id="crc-result">-</div>
+            <button class="copy-btn" onclick="Utils.copy('crc-result')">复制</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 累加和 Checksum -->
+      <div class="tool-panel" data-tool="sum">
+        <div class="card">
+          <div class="card-title">累加和 Checksum</div>
+          <div class="input-group">
+            <label>输入Hex数据</label>
+            <textarea id="sum-input" rows="4" placeholder="01 02 03 04 05"></textarea>
+          </div>
+          <div class="input-row">
+            <div class="input-group">
+              <label>累加位宽</label>
+              <div class="radio-group">
+                <label><input type="radio" name="sum-width" value="8" checked> 8bit</label>
+                <label><input type="radio" name="sum-width" value="16"> 16bit</label>
+                <label><input type="radio" name="sum-width" value="32"> 32bit</label>
+              </div>
+            </div>
+            <div class="input-group">
+              <label>输出方式</label>
+              <div class="radio-group">
+                <label><input type="radio" name="sum-out" value="direct" checked> 直接截取</label>
+                <label><input type="radio" name="sum-out" value="complement"> 取反+1</label>
+              </div>
+            </div>
+          </div>
+          <div class="input-group">
+            <label><input type="checkbox" id="sum-carry"> 进位回卷（Carry Wrap，TCP/UDP校验和算法）</label>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-primary" onclick="ChecksumTools.calcSum()">计算</button>
+            <button class="btn btn-secondary" onclick="ChecksumTools.clearSum()">清空</button>
+            <button class="btn btn-outline" onclick="ChecksumTools.fillSumExample()">示例</button>
+          </div>
+          <div class="result-area">
+            <div class="result-label">累加和结果</div>
+            <div class="result-box" id="sum-result">-</div>
+            <button class="copy-btn" onclick="Utils.copy('sum-result')">复制</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 编码转换类 ==================== -->
+    <div class="category-content" data-category="encoding">
+      <div class="sub-tabs" id="subTabs-encoding">
+        <button class="sub-tab active" data-tool="hexconv">Hex/ASCII/Dec/Bin</button>
+        <button class="sub-tab" data-tool="base64">Base64</button>
+        <button class="sub-tab" data-tool="utf8">UTF-8/Unicode</button>
+      </div>
+
+      <!-- Hex/ASCII/十进制/二进制 互转 -->
+      <div class="tool-panel active" data-tool="hexconv">
+        <div class="card">
+          <div class="card-title">Hex / ASCII / 十进制 / 二进制 互转</div>
+          <div class="input-group">
+            <label><input type="checkbox" id="hexconv-sep" checked> 自动添加空格分隔</label>
+          </div>
+          <div class="hexconv-grid">
+            <div class="input-group">
+              <label>Hex 十六进制</label>
+              <textarea id="hexconv-hex" rows="4" oninput="EncodingTools.onHexConvInput('hex')" placeholder="48 65 6C 6C 6F"></textarea>
+            </div>
+            <div class="input-group">
+              <label>ASCII 文本</label>
+              <textarea id="hexconv-ascii" rows="4" oninput="EncodingTools.onHexConvInput('ascii')" placeholder="Hello"></textarea>
+            </div>
+            <div class="input-group">
+              <label>十进制</label>
+              <textarea id="hexconv-dec" rows="4" oninput="EncodingTools.onHexConvInput('dec')" placeholder="72 101 108 108 111"></textarea>
+            </div>
+            <div class="input-group">
+              <label>二进制</label>
+              <textarea id="hexconv-bin" rows="4" oninput="EncodingTools.onHexConvInput('bin')" placeholder="01001000 01100101 01101100 01101100 01101111"></textarea>
+            </div>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-secondary" onclick="EncodingTools.clearHexConv()">全部清空</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Base64 -->
+      <div class="tool-panel" data-tool="base64">
+        <div class="card">
+          <div class="card-title">Base64 编码 / 解码</div>
+          <div class="input-group">
+            <label>输入</label>
+            <textarea id="b64-input" rows="4" placeholder="输入文本或Hex数据"></textarea>
+          </div>
+          <div class="input-row">
+            <div class="input-group">
+              <label>输入格式</label>
+              <div class="radio-group">
+                <label><input type="radio" name="b64-mode" value="text" checked> 文本</label>
+                <label><input type="radio" name="b64-mode" value="hex"> Hex字节</label>
+              </div>
+            </div>
+            <div class="input-group">
+              <label><input type="checkbox" id="b64-url"> URL安全模式（替换 +/= 为 -_）</label>
+            </div>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-primary" onclick="EncodingTools.base64Encode()">编码</button>
+            <button class="btn btn-primary" onclick="EncodingTools.base64Decode()">解码</button>
+            <button class="btn btn-secondary" onclick="EncodingTools.clearBase64()">清空</button>
+          </div>
+          <div class="result-area">
+            <div class="result-label">输出</div>
+            <textarea id="b64-output" rows="4" readonly placeholder="结果将显示在这里"></textarea>
+            <button class="copy-btn" onclick="Utils.copyTextArea('b64-output')">复制</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- UTF-8 / Unicode -->
+      <div class="tool-panel" data-tool="utf8">
+        <div class="card">
+          <div class="card-title">UTF-8 / Unicode 转换</div>
+          <div class="input-group">
+            <label>输入</label>
+            <textarea id="utf8-input" rows="3" placeholder="输入文本、\\uXXXX 序列、U+XXXX 码点或Hex字节"></textarea>
+          </div>
+          <div class="input-group">
+            <label>输入格式</label>
+            <div class="radio-group">
+              <label><input type="radio" name="utf8-mode" value="text" checked> 文本</label>
+              <label><input type="radio" name="utf8-mode" value="unicode"> \\uXXXX</label>
+              <label><input type="radio" name="utf8-mode" value="codepoint"> U+XXXX</label>
+              <label><input type="radio" name="utf8-mode" value="hex"> Hex字节</label>
+            </div>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-primary" onclick="EncodingTools.convertUTF8()">转换</button>
+            <button class="btn btn-secondary" onclick="EncodingTools.clearUTF8()">清空</button>
+          </div>
+          <div class="result-area">
+            <div class="result-label">UTF-8 字节序列 (Hex)</div>
+            <div class="result-box" id="utf8-hex">-</div>
+            <button class="copy-btn" onclick="Utils.copy('utf8-hex')">复制</button>
+          </div>
+          <div class="result-area">
+            <div class="result-label">Unicode 码点</div>
+            <div class="result-box" id="utf8-codepoint">-</div>
+          </div>
+          <div class="result-area">
+            <div class="result-label">十进制码点</div>
+            <div class="result-box" id="utf8-decimal">-</div>
+          </div>
+          <div class="result-area">
+            <div class="result-label">HTML 实体</div>
+            <div class="result-box" id="utf8-html">-</div>
+            <button class="copy-btn" onclick="Utils.copy('utf8-html')">复制</button>
+          </div>
+          <div class="result-area">
+            <div class="result-label">解码文本</div>
+            <div class="result-box" id="utf8-text">-</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 字符串处理类 ==================== -->
+    <div class="category-content" data-category="string">
+      <div class="sub-tabs" id="subTabs-string">
+        <button class="sub-tab active" data-tool="charcount">字符数统计</button>
+        <button class="sub-tab" data-tool="bytecount">字节数统计</button>
+        <button class="sub-tab" data-tool="strlen">字符串长度</button>
+      </div>
+
+      <!-- 字符数统计 -->
+      <div class="tool-panel active" data-tool="charcount">
+        <div class="card">
+          <div class="card-title">字符数统计</div>
+          <div class="input-group">
+            <label>输入文本（实时统计）</label>
+            <textarea id="charcount-input" rows="4" oninput="StringTools.countChars()" placeholder="在此粘贴或输入文本..."></textarea>
+          </div>
+          <div class="stats-grid" id="charcount-stats">
+            <div class="stat-card stat-total"><div class="stat-num" id="cc-total">0</div><div class="stat-label">总字符数</div></div>
+            <div class="stat-card stat-cn"><div class="stat-num" id="cc-cn">0</div><div class="stat-label">中文字符</div></div>
+            <div class="stat-card stat-en"><div class="stat-num" id="cc-en">0</div><div class="stat-label">英文字母</div></div>
+            <div class="stat-card stat-digit"><div class="stat-num" id="cc-digit">0</div><div class="stat-label">数字</div></div>
+            <div class="stat-card stat-punct"><div class="stat-num" id="cc-punct">0</div><div class="stat-label">标点符号</div></div>
+            <div class="stat-card stat-space"><div class="stat-num" id="cc-space">0</div><div class="stat-label">空格</div></div>
+            <div class="stat-card stat-other"><div class="stat-num" id="cc-other">0</div><div class="stat-label">其他</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 字节数统计 -->
+      <div class="tool-panel" data-tool="bytecount">
+        <div class="card">
+          <div class="card-title">字节数统计</div>
+          <div class="input-group">
+            <label>输入文本</label>
+            <textarea id="bytecount-input" rows="4" oninput="StringTools.countBytes()" placeholder="输入文本查看各编码下的字节数"></textarea>
+          </div>
+          <div class="stats-grid">
+            <div class="stat-card stat-total"><div class="stat-num" id="bc-utf8">0</div><div class="stat-label">UTF-8 字节</div></div>
+            <div class="stat-card stat-cn"><div class="stat-num" id="bc-ascii">0</div><div class="stat-label">ASCII 字节</div></div>
+          </div>
+          <div class="result-area">
+            <div class="result-label">逐字符分析（前100字符）</div>
+            <div class="char-table-wrap">
+              <table class="char-table" id="bc-table">
+                <thead><tr><th>字符</th><th>Unicode</th><th>UTF-8</th><th>Hex</th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 字符串长度 -->
+      <div class="tool-panel" data-tool="strlen">
+        <div class="card">
+          <div class="card-title">字符串长度计算</div>
+          <div class="input-group">
+            <label>输入文本</label>
+            <textarea id="strlen-input" rows="4" oninput="StringTools.calcLength()" placeholder="输入文本查看长度信息"></textarea>
+          </div>
+          <div class="stats-grid">
+            <div class="stat-card stat-total"><div class="stat-num" id="sl-char">0</div><div class="stat-label">字符长度</div></div>
+            <div class="stat-card stat-cn"><div class="stat-num" id="sl-byte">0</div><div class="stat-label">UTF-8字节</div></div>
+            <div class="stat-card stat-en"><div class="stat-num" id="sl-width">0</div><div class="stat-label">显示宽度</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 哈希/加密类 ==================== -->
+    <div class="category-content" data-category="crypto">
+      <div class="sub-tabs" id="subTabs-crypto">
+        <button class="sub-tab active" data-tool="md5">MD5</button>
+        <button class="sub-tab" data-tool="sha">SHA</button>
+        <button class="sub-tab" data-tool="aes">AES</button>
+      </div>
+
+      <!-- MD5 -->
+      <div class="tool-panel active" data-tool="md5">
+        <div class="card">
+          <div class="card-title">MD5 消息摘要</div>
+          <div class="input-group">
+            <label>输入</label>
+            <textarea id="md5-input" rows="4" placeholder="输入文本或Hex数据"></textarea>
+          </div>
+          <div class="input-row">
+            <div class="input-group">
+              <label>输入格式</label>
+              <div class="radio-group">
+                <label><input type="radio" name="md5-mode" value="text" checked> 文本</label>
+                <label><input type="radio" name="md5-mode" value="hex"> Hex字节</label>
+              </div>
+            </div>
+            <div class="input-group">
+              <label>输出大小写</label>
+              <div class="radio-group">
+                <label><input type="radio" name="md5-case" value="lower" checked> 小写</label>
+                <label><input type="radio" name="md5-case" value="upper"> 大写</label>
+              </div>
+            </div>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-primary" onclick="CryptoTools.calcMD5()">计算</button>
+            <button class="btn btn-secondary" onclick="CryptoTools.clearMD5()">清空</button>
+          </div>
+          <div class="result-area">
+            <div class="result-label">MD5 (32位)</div>
+            <div class="result-box" id="md5-result" style="letter-spacing:2px;">-</div>
+            <button class="copy-btn" onclick="Utils.copy('md5-result')">复制</button>
+          </div>
+          <div class="result-area">
+            <div class="result-label">分段显示</div>
+            <div class="result-box" id="md5-segment" style="letter-spacing:4px;">-</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SHA -->
+      <div class="tool-panel" data-tool="sha">
+        <div class="card">
+          <div class="card-title">SHA 安全散列算法</div>
+          <div class="input-group">
+            <label>输入</label>
+            <textarea id="sha-input" rows="4" placeholder="输入文本或Hex数据"></textarea>
+          </div>
+          <div class="input-row">
+            <div class="input-group">
+              <label>算法</label>
+              <div class="radio-group">
+                <label><input type="radio" name="sha-variant" value="SHA1" checked> SHA-1</label>
+                <label><input type="radio" name="sha-variant" value="SHA256"> SHA-256</label>
+              </div>
+            </div>
+            <div class="input-group">
+              <label>输入格式</label>
+              <div class="radio-group">
+                <label><input type="radio" name="sha-mode" value="text" checked> 文本</label>
+                <label><input type="radio" name="sha-mode" value="hex"> Hex字节</label>
+              </div>
+            </div>
+            <div class="input-group">
+              <label>输出大小写</label>
+              <div class="radio-group">
+                <label><input type="radio" name="sha-case" value="lower" checked> 小写</label>
+                <label><input type="radio" name="sha-case" value="upper"> 大写</label>
+              </div>
+            </div>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-primary" onclick="CryptoTools.calcSHA()">计算</button>
+            <button class="btn btn-secondary" onclick="CryptoTools.clearSHA()">清空</button>
+          </div>
+          <div class="result-area">
+            <div class="result-label">SHA 结果</div>
+            <div class="result-box" id="sha-result" style="letter-spacing:1px;word-break:break-all;">-</div>
+            <button class="copy-btn" onclick="Utils.copy('sha-result')">复制</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- AES -->
+      <div class="tool-panel" data-tool="aes">
+        <div class="card">
+          <div class="card-title">AES 对称加密 / 解密</div>
+          <div class="input-group">
+            <label>输入（明文或密文）</label>
+            <textarea id="aes-input" rows="4" placeholder="加密时输入明文，解密时输入密文"></textarea>
+          </div>
+          <div class="input-row">
+            <div class="input-group flex-1">
+              <label>密钥</label>
+              <input type="text" id="aes-key" placeholder="输入密钥文本或Hex">
+            </div>
+            <div class="input-group flex-1">
+              <label>密钥格式</label>
+              <div class="radio-group">
+                <label><input type="radio" name="aes-key-mode" value="text" checked> 文本</label>
+                <label><input type="radio" name="aes-key-mode" value="hex"> Hex</label>
+              </div>
+            </div>
+          </div>
+          <div class="input-row">
+            <div class="input-group flex-1">
+              <label>IV 初始向量</label>
+              <input type="text" id="aes-iv" placeholder="ECB模式无需IV">
+            </div>
+            <div class="input-group flex-1">
+              <label>IV格式</label>
+              <div class="radio-group">
+                <label><input type="radio" name="aes-iv-mode" value="text" checked> 文本</label>
+                <label><input type="radio" name="aes-iv-mode" value="hex"> Hex</label>
+              </div>
+            </div>
+          </div>
+          <div class="input-row">
+            <div class="input-group">
+              <label>加密模式</label>
+              <select id="aes-mode" onchange="CryptoTools.onAESModeChange()">
+                <option value="CBC">CBC</option>
+                <option value="ECB">ECB</option>
+                <option value="CTR">CTR</option>
+                <option value="CFB">CFB</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <label>密钥长度</label>
+              <select id="aes-bits">
+                <option value="128">128 bit</option>
+                <option value="192">192 bit</option>
+                <option value="256">256 bit</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <label>填充方式</label>
+              <select id="aes-pad">
+                <option value="Pkcs7">PKCS7</option>
+                <option value="ZeroPadding">ZeroPadding</option>
+                <option value="NoPadding">NoPadding</option>
+              </select>
+            </div>
+          </div>
+          <div class="input-group">
+            <label>输入/输出编码</label>
+            <div class="radio-group">
+              <label><input type="radio" name="aes-enc" value="base64" checked> Base64</label>
+              <label><input type="radio" name="aes-enc" value="hex"> Hex</label>
+            </div>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-primary" onclick="CryptoTools.aesEncrypt()">加密</button>
+            <button class="btn btn-primary" onclick="CryptoTools.aesDecrypt()">解密</button>
+            <button class="btn btn-secondary" onclick="CryptoTools.clearAES()">清空</button>
+          </div>
+          <div class="result-area">
+            <div class="result-label">输出</div>
+            <textarea id="aes-output" rows="4" readonly placeholder="结果将显示在这里"></textarea>
+            <button class="copy-btn" onclick="Utils.copyTextArea('aes-output')">复制</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- 页脚 -->
+  <footer class="footer">
+    <div class="footer-inner">
+      嵌入式开发工具箱 &middot; 所有计算在浏览器本地完成 &middot; 纯静态页面
+    </div>
+  </footer>
+
+  <!-- JS 加载顺序：utils -> 各工具模块 -> app（最后） -->
+  <script src="js/utils.js"></script>
+  <script src="js/tool-checksum.js"></script>
+  <script src="js/tool-encoding.js"></script>
+  <script src="js/tool-string.js"></script>
+  <script src="js/tool-crypto.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
