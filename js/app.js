@@ -159,7 +159,7 @@
   function findCategoryByTool(toolName) {
     var map = {
       'bcc': 'checksum', 'crc': 'checksum', 'sum': 'checksum',
-      'hexconv': 'encoding', 'base64': 'encoding', 'utf8': 'encoding',
+      'hexconv': 'encoding', 'baseconv': 'encoding', 'base64': 'encoding', 'utf8': 'encoding',
       'charcount': 'string', 'bytecount': 'string', 'strlen': 'string',
       'md5': 'crypto', 'sha': 'crypto', 'aes': 'crypto',
       'ts-current': 'timestamp', 'ts-convert': 'timestamp', 'ts-calc': 'timestamp'

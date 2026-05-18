@@ -177,6 +177,7 @@
     <div class="category-content" data-category="encoding">
       <div class="sub-tabs" id="subTabs-encoding">
         <button class="sub-tab active" data-tool="hexconv">Hex/ASCII/Dec/Bin</button>
+        <button class="sub-tab" data-tool="baseconv">进制转换</button>
         <button class="sub-tab" data-tool="base64">Base64</button>
         <button class="sub-tab" data-tool="utf8">UTF-8/Unicode</button>
       </div>
@@ -208,6 +209,68 @@
           </div>
           <div class="btn-row">
             <button class="btn btn-secondary" onclick="EncodingTools.clearHexConv()">全部清空</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 进制转换 -->
+      <div class="tool-panel" data-tool="baseconv">
+        <div class="card">
+          <div class="card-title">进制转换（支持大数）</div>
+          <div class="input-row">
+            <div class="input-group flex-1">
+              <label>源进制</label>
+              <select id="baseconv-from">
+                <option value="2">二进制 (2)</option>
+                <option value="8">八进制 (8)</option>
+                <option value="10" selected>十进制 (10)</option>
+                <option value="16">十六进制 (16)</option>
+                <option value="custom">自定义进制...</option>
+              </select>
+            </div>
+            <div class="input-group flex-1">
+              <label>目标进制</label>
+              <select id="baseconv-to">
+                <option value="2">二进制 (2)</option>
+                <option value="8">八进制 (8)</option>
+                <option value="10">十进制 (10)</option>
+                <option value="16" selected>十六进制 (16)</option>
+                <option value="custom">自定义进制...</option>
+              </select>
+            </div>
+          </div>
+          <div class="input-row" id="baseconv-custom-row" style="display:none;">
+            <div class="input-group flex-1">
+              <label>自定义源进制 (2-36)</label>
+              <input type="number" id="baseconv-from-custom" min="2" max="36" value="2" placeholder="2-36">
+            </div>
+            <div class="input-group flex-1">
+              <label>自定义目标进制 (2-36)</label>
+              <input type="number" id="baseconv-to-custom" min="2" max="36" value="16" placeholder="2-36">
+            </div>
+          </div>
+          <div class="input-group">
+            <label>输入数值</label>
+            <textarea id="baseconv-input" rows="3" placeholder="输入要转换的数值（支持大数）" oninput="EncodingTools.baseConvert()"></textarea>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-primary" onclick="EncodingTools.baseConvert()">转换</button>
+            <button class="btn btn-secondary" onclick="EncodingTools.clearBaseConv()">清空</button>
+            <button class="btn btn-outline" onclick="EncodingTools.swapBase()">交换进制</button>
+          </div>
+          <div class="result-area">
+            <div class="result-label">转换结果</div>
+            <div class="result-box" id="baseconv-result" style="word-break:break-all;">-</div>
+            <button class="copy-btn" onclick="Utils.copy('baseconv-result')">复制</button>
+          </div>
+          <div class="result-area">
+            <div class="result-label">所有进制对照</div>
+            <div class="baseconv-all" id="baseconv-all">
+              <div class="baseconv-row"><span class="baseconv-label">二进制(2)</span><span class="baseconv-value" id="bc-bin">-</span><button class="copy-btn" style="position:static;opacity:0.8;" onclick="Utils.copy('bc-bin')">复制</button></div>
+              <div class="baseconv-row"><span class="baseconv-label">八进制(8)</span><span class="baseconv-value" id="bc-oct">-</span><button class="copy-btn" style="position:static;opacity:0.8;" onclick="Utils.copy('bc-oct')">复制</button></div>
+              <div class="baseconv-row"><span class="baseconv-label">十进制(10)</span><span class="baseconv-value" id="bc-dec">-</span><button class="copy-btn" style="position:static;opacity:0.8;" onclick="Utils.copy('bc-dec')">复制</button></div>
+              <div class="baseconv-row"><span class="baseconv-label">十六进制(16)</span><span class="baseconv-value" id="bc-hex2">-</span><button class="copy-btn" style="position:static;opacity:0.8;" onclick="Utils.copy('bc-hex2')">复制</button></div>
+            </div>
           </div>
         </div>
       </div>

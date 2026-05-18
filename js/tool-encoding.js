@@ -209,6 +209,83 @@ var EncodingTools = (function() {
       document.getElementById('b64-output').value = '';
     },
 
+    // ==================== 进制转换 ====================
+    /** 进制转换核心 */
+    baseConvert: function() {
+      var input = document.getElementById('baseconv-input').value.trim();
+      if (!input) {
+        _clearBaseConvResults();
+        return;
+      }
+
+      var fromBase = _getBaseValue('baseconv-from', 'baseconv-from-custom');
+      var toBase = _getBaseValue('baseconv-to', 'baseconv-to-custom');
+
+      if (!fromBase || !toBase) {
+        document.getElementById('baseconv-result').textContent = '错误：进制必须在 2-36 之间';
+        return;
+      }
+
+      try {
+        // 清理输入：移除前缀和空格
+        var cleaned = input.replace(/\s/g, '');
+        cleaned = cleaned.replace(/^0[xX]/, ''); // 移除 0x
+        cleaned = cleaned.replace(/^0[oO]/, ''); // 移除 0o
+        cleaned = cleaned.replace(/^0[bB]/, ''); // 移除 0b
+
+        // 使用 BigInt 支持大数转换
+        var decValue = _parseBigInt(cleaned, fromBase);
+        if (decValue === null) {
+          document.getElementById('baseconv-result').textContent = '错误：输入包含无效字符（对于' + fromBase + '进制）';
+          _clearBaseConvResults();
+          return;
+        }
+
+        var result = _bigIntToBase(decValue, toBase).toUpperCase();
+        document.getElementById('baseconv-result').textContent = result;
+
+        // 同时显示所有常用进制
+        document.getElementById('bc-bin').textContent = _bigIntToBase(decValue, 2);
+        document.getElementById('bc-oct').textContent = _bigIntToBase(decValue, 8);
+        document.getElementById('bc-dec').textContent = _bigIntToBase(decValue, 10);
+        document.getElementById('bc-hex2').textContent = _bigIntToBase(decValue, 16).toUpperCase();
+      } catch (e) {
+        document.getElementById('baseconv-result').textContent = '错误：' + e.message;
+        _clearBaseConvResults();
+      }
+    },
+
+    /** 清空进制转换 */
+    clearBaseConv: function() {
+      document.getElementById('baseconv-input').value = '';
+      document.getElementById('baseconv-result').textContent = '-';
+      _clearBaseConvResults();
+    },
+
+    /** 交换源进制和目标进制 */
+    swapBase: function() {
+      var fromEl = document.getElementById('baseconv-from');
+      var toEl = document.getElementById('baseconv-to');
+      var tmp = fromEl.value;
+      fromEl.value = toEl.value;
+      toEl.value = tmp;
+
+      // 同步自定义值
+      var fromCustom = document.getElementById('baseconv-from-custom');
+      var toCustom = document.getElementById('baseconv-to-custom');
+      var tmpC = fromCustom.value;
+      fromCustom.value = toCustom.value;
+      toCustom.value = tmpC;
+
+      _updateCustomRowVisibility();
+      EncodingTools.baseConvert();
+    },
+
+    /** 进制选择变化时的处理 */
+    onBaseSelectChange: function() {
+      _updateCustomRowVisibility();
+    },
+
     // ==================== UTF-8 / Unicode ====================
     convertUTF8: function() {
       var input = document.getElementById('utf8-input').value;
@@ -313,4 +390,95 @@ var EncodingTools = (function() {
     document.getElementById('utf8-html').textContent = '-';
     document.getElementById('utf8-text').textContent = '-';
   }
+
+  // ==================== 进制转换内部辅助函数 ====================
+
+  /** 获取进制值（处理自定义进制） */
+  function _getBaseValue(selectId, customId) {
+    var el = document.getElementById(selectId);
+    if (el.value === 'custom') {
+      var val = parseInt(document.getElementById(customId).value, 10);
+      if (isNaN(val) || val < 2 || val > 36) return null;
+      return val;
+    }
+    return parseInt(el.value, 10);
+  }
+
+  /** 显示/隐藏自定义进制输入行 */
+  function _updateCustomRowVisibility() {
+    var fromEl = document.getElementById('baseconv-from');
+    var toEl = document.getElementById('baseconv-to');
+    var row = document.getElementById('baseconv-custom-row');
+    if (fromEl.value === 'custom' || toEl.value === 'custom') {
+      row.style.display = '';
+    } else {
+      row.style.display = 'none';
+    }
+  }
+
+  /**
+   * 将字符串按指定进制解析为 BigInt
+   * @param {string} str 输入字符串
+   * @param {number} base 进制 (2-36)
+   * @returns {BigInt|null}
+   */
+  function _parseBigInt(str, base) {
+    if (!str) return null;
+    var chars = '0123456789abcdefghijklmnopqrstuvwxyz';
+    var result = 0n;
+    var bigBase = BigInt(base);
+    var negative = false;
+
+    if (str[0] === '-') {
+      negative = true;
+      str = str.substring(1);
+    }
+
+    for (var i = 0; i < str.length; i++) {
+      var ch = str[i].toLowerCase();
+      var digit = chars.indexOf(ch);
+      if (digit === -1 || digit >= base) return null;
+      result = result * bigBase + BigInt(digit);
+    }
+
+    return negative ? -result : result;
+  }
+
+  /**
+   * 将 BigInt 转为指定进制字符串
+   * @param {BigInt} value
+   * @param {number} base 进制 (2-36)
+   * @returns {string}
+   */
+  function _bigIntToBase(value, base) {
+    if (value === 0n) return '0';
+    var chars = '0123456789abcdefghijklmnopqrstuvwxyz';
+    var bigBase = BigInt(base);
+    var negative = value < 0n;
+    if (negative) value = -value;
+
+    var result = '';
+    while (value > 0n) {
+      result = chars[Number(value % bigBase)] + result;
+      value = value / bigBase;
+    }
+
+    return negative ? '-' + result : result;
+  }
+
+  /** 清空进制转换所有进制对照结果 */
+  function _clearBaseConvResults() {
+    document.getElementById('bc-bin').textContent = '-';
+    document.getElementById('bc-oct').textContent = '-';
+    document.getElementById('bc-dec').textContent = '-';
+    document.getElementById('bc-hex2').textContent = '-';
+  }
+
+  // 绑定进制选择器变化事件
+  document.addEventListener('DOMContentLoaded', function() {
+    var fromEl = document.getElementById('baseconv-from');
+    var toEl = document.getElementById('baseconv-to');
+    if (fromEl) fromEl.addEventListener('change', _updateCustomRowVisibility);
+    if (toEl) toEl.addEventListener('change', _updateCustomRowVisibility);
+  });
 })();
