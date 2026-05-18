@@ -15,6 +15,10 @@
   <header class="header">
     <div class="header-inner">
       <span class="logo">&#9881; 青空工具箱</span>
+      <div class="header-search">
+        <input type="text" id="toolSearch" class="search-input" placeholder="搜索工具..." oninput="ToolSearch.onInput()" onfocus="ToolSearch.onFocus()" autocomplete="off">
+        <div class="search-results" id="searchResults"></div>
+      </div>
       <span class="header-sub">在线计算 &middot; 浏览器本地运行 &middot; 无需服务器</span>
     </div>
   </header>
@@ -739,6 +743,7 @@
   <script src="js/tool-string.js"></script>
   <script src="js/tool-crypto.js"></script>
   <script src="js/tool-timestamp.js"></script>
+  <script src="js/tool-search.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>
