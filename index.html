@@ -175,6 +175,59 @@
           </div>
         </div>
       </div>
+
+      <!-- 数据校验知识介绍 -->
+      <div class="card ts-intro">
+        <div class="card-title">关于数据校验</div>
+        <div class="ts-intro-content">
+          <h4>什么是数据校验？</h4>
+          <p>数据校验（Data Checksum / Error Detection）是在数据传输或存储过程中，通过对原始数据进行特定数学运算生成一个校验值，接收方用同样的算法重新计算并比对，以检测数据是否在传输中发生错误或被篡改。</p>
+
+          <h4>BCC / XOR 异或校验</h4>
+          <p>BCC（Block Check Character）是最简单的校验方式，将所有数据字节逐一进行异或（XOR）运算，得到一个单字节校验值。计算速度极快，适用于简单的串口通信协议。</p>
+          <ul>
+            <li><strong>优点</strong>：实现简单、计算快、占用资源极少</li>
+            <li><strong>缺点</strong>：检错能力弱，无法检测偶数个比特同时翻转的错误</li>
+            <li><strong>应用</strong>：RS-485 通信、简单嵌入式协议、IC 卡通信（ISO 14443）</li>
+          </ul>
+
+          <h4>CRC 循环冗余校验</h4>
+          <p>CRC（Cyclic Redundancy Check）基于多项式除法原理，将数据视为一个大的二进制数，除以一个预定义的生成多项式，余数即为 CRC 校验值。CRC 具有很强的检错能力，能检测所有单比特错误、双比特错误和奇数个比特错误。</p>
+          <table class="ts-info-table">
+            <thead>
+              <tr><th>CRC 变体</th><th>位宽</th><th>多项式</th><th>典型应用</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>CRC-8</td><td>8</td><td>0x07</td><td>ATM HEC、SMBus</td></tr>
+              <tr><td>CRC-8/MAXIM</td><td>8</td><td>0x31</td><td>1-Wire 总线（DS18B20）</td></tr>
+              <tr><td>CRC-16/MODBUS</td><td>16</td><td>0x8005</td><td>Modbus RTU 协议</td></tr>
+              <tr><td>CRC-16/CCITT</td><td>16</td><td>0x1021</td><td>X.25、HDLC、蓝牙</td></tr>
+              <tr><td>CRC-16/XMODEM</td><td>16</td><td>0x1021</td><td>XMODEM 文件传输协议</td></tr>
+              <tr><td>CRC-32</td><td>32</td><td>0x04C11DB7</td><td>Ethernet、ZIP、PNG、MPEG-2</td></tr>
+            </tbody>
+          </table>
+
+          <h4>CRC 参数说明</h4>
+          <ul>
+            <li><strong>Poly（多项式）</strong>：生成多项式的简写形式，省略最高位 1</li>
+            <li><strong>Init（初始值）</strong>：CRC 寄存器的初始值</li>
+            <li><strong>RefIn（输入反转）</strong>：是否对每个输入字节进行位反转</li>
+            <li><strong>RefOut（输出反转）</strong>：是否对最终 CRC 值进行位反转</li>
+            <li><strong>XorOut（结果异或）</strong>：最终 CRC 值与此值异或后输出</li>
+          </ul>
+
+          <h4>累加和 Checksum</h4>
+          <p>累加和是将所有数据字节相加，取结果的低位作为校验值。变体包括直接截取、取反加一（补码）、进位回卷等。</p>
+          <ul>
+            <li><strong>直接截取</strong>：将累加结果截取到指定位宽（8/16/32 位）</li>
+            <li><strong>取反+1</strong>：对截取结果取补码，常用于校验和验证（所有数据加上校验值结果为 0）</li>
+            <li><strong>进位回卷</strong>：溢出的高位加回低位，TCP/UDP/IP 协议使用此算法</li>
+          </ul>
+
+          <h4>标准测试向量</h4>
+          <p>CRC 算法通常使用 ASCII 字符串 "123456789"（Hex: 31 32 33 34 35 36 37 38 39）作为标准测试数据来验证实现的正确性。</p>
+        </div>
+      </div>
     </div>
 
     <!-- ==================== 编码转换类 ==================== -->
@@ -357,6 +410,61 @@
           </div>
         </div>
       </div>
+
+      <!-- 编码转换知识介绍 -->
+      <div class="card ts-intro">
+        <div class="card-title">关于编码转换</div>
+        <div class="ts-intro-content">
+          <h4>数制（进制）基础</h4>
+          <p>数制是用一组固定的符号和规则来表示数值的方法。计算机内部使用二进制，但人类更习惯十进制，因此不同进制之间的转换是编程中的基本操作。</p>
+          <table class="ts-info-table">
+            <thead>
+              <tr><th>进制</th><th>基数</th><th>字符集</th><th>前缀标识</th><th>典型用途</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>二进制</td><td>2</td><td>0-1</td><td>0b</td><td>硬件寄存器、位操作</td></tr>
+              <tr><td>八进制</td><td>8</td><td>0-7</td><td>0o 或 0</td><td>Unix 文件权限（chmod 755）</td></tr>
+              <tr><td>十进制</td><td>10</td><td>0-9</td><td>无</td><td>日常计算、用户界面</td></tr>
+              <tr><td>十六进制</td><td>16</td><td>0-9, A-F</td><td>0x</td><td>内存地址、颜色值、字节数据</td></tr>
+            </tbody>
+          </table>
+
+          <h4>ASCII 编码</h4>
+          <p>ASCII（American Standard Code for Information Interchange）是最基础的字符编码标准，使用 7 位二进制数（0-127）表示 128 个字符，包括 33 个控制字符和 95 个可打印字符。</p>
+          <ul>
+            <li><strong>0x00-0x1F</strong>：控制字符（如 0x0A 换行、0x0D 回车）</li>
+            <li><strong>0x20-0x7E</strong>：可打印字符（空格、字母、数字、标点）</li>
+            <li><strong>0x30-0x39</strong>：数字 0-9</li>
+            <li><strong>0x41-0x5A</strong>：大写字母 A-Z</li>
+            <li><strong>0x61-0x7A</strong>：小写字母 a-z</li>
+          </ul>
+
+          <h4>Base64 编码</h4>
+          <p>Base64 是一种将二进制数据编码为 ASCII 字符串的方法。它将每 3 个字节（24 位）分为 4 组 6 位数据，每组映射到一个可打印字符。编码后数据量增大约 33%。</p>
+          <ul>
+            <li><strong>标准字符集</strong>：A-Z、a-z、0-9、+、/，填充字符 =</li>
+            <li><strong>URL 安全变体</strong>：将 + 替换为 -，/ 替换为 _，省略填充 =</li>
+            <li><strong>应用场景</strong>：电子邮件附件（MIME）、Data URI、JWT Token、API 传输二进制数据</li>
+          </ul>
+
+          <h4>UTF-8 编码</h4>
+          <p>UTF-8 是 Unicode 的一种变长编码实现，使用 1-4 个字节表示一个字符，兼容 ASCII。它是互联网上最广泛使用的字符编码。</p>
+          <table class="ts-info-table">
+            <thead>
+              <tr><th>码点范围</th><th>字节数</th><th>编码格式</th><th>示例</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>U+0000 - U+007F</td><td>1</td><td>0xxxxxxx</td><td>英文字母、数字（兼容 ASCII）</td></tr>
+              <tr><td>U+0080 - U+07FF</td><td>2</td><td>110xxxxx 10xxxxxx</td><td>拉丁扩展、希腊字母</td></tr>
+              <tr><td>U+0800 - U+FFFF</td><td>3</td><td>1110xxxx 10xxxxxx 10xxxxxx</td><td>中日韩汉字、常用符号</td></tr>
+              <tr><td>U+10000 - U+10FFFF</td><td>4</td><td>11110xxx 10xxxxxx 10xxxxxx 10xxxxxx</td><td>Emoji、古文字</td></tr>
+            </tbody>
+          </table>
+
+          <h4>Unicode 简介</h4>
+          <p>Unicode 是一个字符集标准，为世界上几乎所有的文字系统中的每个字符分配一个唯一的码点（Code Point）。当前 Unicode 15.1 包含超过 149,000 个字符，覆盖 161 种文字。码点通常写作 U+XXXX 格式。</p>
+        </div>
+      </div>
     </div>
 
     <!-- ==================== 字符串处理类 ==================== -->
@@ -424,6 +532,61 @@
             <div class="stat-card stat-cn"><div class="stat-num" id="sl-byte">0</div><div class="stat-label">UTF-8字节</div></div>
             <div class="stat-card stat-en"><div class="stat-num" id="sl-width">0</div><div class="stat-label">显示宽度</div></div>
           </div>
+        </div>
+      </div>
+
+      <!-- 字符串处理知识介绍 -->
+      <div class="card ts-intro">
+        <div class="card-title">关于字符串与编码长度</div>
+        <div class="ts-intro-content">
+          <h4>字符与字节的区别</h4>
+          <p>在计算机中，"字符"和"字节"是两个不同的概念。一个字符是人类可读的最小文本单位（如一个汉字、一个字母），而字节是计算机存储的最小单位。不同编码下，一个字符可能占用不同数量的字节。</p>
+
+          <h4>各编码下的字节占用</h4>
+          <table class="ts-info-table">
+            <thead>
+              <tr><th>字符类型</th><th>ASCII</th><th>UTF-8</th><th>UTF-16</th><th>GBK</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>英文字母/数字</td><td>1 字节</td><td>1 字节</td><td>2 字节</td><td>1 字节</td></tr>
+              <tr><td>中文汉字</td><td>不支持</td><td>3 字节</td><td>2 字节</td><td>2 字节</td></tr>
+              <tr><td>Emoji 表情</td><td>不支持</td><td>4 字节</td><td>4 字节（代理对）</td><td>不支持</td></tr>
+              <tr><td>日文假名</td><td>不支持</td><td>3 字节</td><td>2 字节</td><td>不支持</td></tr>
+            </tbody>
+          </table>
+
+          <h4>字符长度 vs 字节长度</h4>
+          <ul>
+            <li><strong>字符长度</strong>：文本中字符的个数，与编码无关。JavaScript 中 <code>"你好".length</code> 返回 2</li>
+            <li><strong>字节长度</strong>：文本在特定编码下占用的字节数。"你好" 在 UTF-8 下为 6 字节，GBK 下为 4 字节</li>
+            <li><strong>显示宽度</strong>：在等宽字体终端中的显示列数。全角字符（中文、全角标点）占 2 列，半角字符占 1 列</li>
+          </ul>
+
+          <h4>JavaScript 中的字符串长度</h4>
+          <p>JavaScript 内部使用 UTF-16 编码。<code>String.length</code> 返回的是 UTF-16 码元（code unit）的数量，而非字符数。对于 BMP 之外的字符（如 Emoji），一个字符占用 2 个码元（代理对），导致 <code>length</code> 返回 2。</p>
+          <div class="ts-code-examples">
+            <div class="ts-code-block">
+              <span class="ts-code-lang">字符数</span>
+              <code>[..."你好🌍"].length → 3</code>
+            </div>
+            <div class="ts-code-block">
+              <span class="ts-code-lang">码元数</span>
+              <code>"你好🌍".length → 4</code>
+            </div>
+            <div class="ts-code-block">
+              <span class="ts-code-lang">UTF-8字节</span>
+              <code>new TextEncoder().encode("你好🌍").length → 10</code>
+            </div>
+          </div>
+
+          <h4>常见应用场景</h4>
+          <ul>
+            <li><strong>数据库字段</strong>：VARCHAR(n) 中 n 通常指字符数，但实际存储受编码影响</li>
+            <li><strong>网络传输</strong>：HTTP Content-Length 头指的是字节数，非字符数</li>
+            <li><strong>短信/推文</strong>：字符数限制通常按 Unicode 字符计算</li>
+            <li><strong>终端显示</strong>：对齐表格时需考虑全角/半角的显示宽度差异</li>
+            <li><strong>嵌入式开发</strong>：内存受限设备需精确计算字符串的字节占用</li>
+          </ul>
         </div>
       </div>
     </div>
@@ -597,6 +760,79 @@
             <textarea id="aes-output" rows="4" readonly placeholder="结果将显示在这里"></textarea>
             <button class="copy-btn" onclick="Utils.copyTextArea('aes-output')">复制</button>
           </div>
+        </div>
+      </div>
+
+      <!-- 哈希/加密知识介绍 -->
+      <div class="card ts-intro">
+        <div class="card-title">关于哈希与加密</div>
+        <div class="ts-intro-content">
+          <h4>哈希（散列）与加密的区别</h4>
+          <p>哈希和加密是两种不同的密码学操作。哈希是<strong>单向</strong>的，无法从哈希值还原原始数据；加密是<strong>双向</strong>的，使用密钥可以将密文还原为明文。</p>
+          <table class="ts-info-table">
+            <thead>
+              <tr><th>特性</th><th>哈希（Hash）</th><th>对称加密（如 AES）</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>方向</td><td>单向，不可逆</td><td>双向，可加密可解密</td></tr>
+              <tr><td>输出长度</td><td>固定长度</td><td>与输入长度相关</td></tr>
+              <tr><td>是否需要密钥</td><td>不需要</td><td>需要</td></tr>
+              <tr><td>用途</td><td>完整性校验、密码存储、数字签名</td><td>数据保密传输与存储</td></tr>
+            </tbody>
+          </table>
+
+          <h4>MD5 消息摘要算法</h4>
+          <p>MD5（Message-Digest Algorithm 5）由 Ronald Rivest 于 1991 年设计，输出 128 位（16 字节）哈希值，通常表示为 32 位十六进制字符串。</p>
+          <ul>
+            <li><strong>输出长度</strong>：128 位 / 32 个十六进制字符</li>
+            <li><strong>安全性</strong>：已被证明存在碰撞漏洞（2004 年王小云团队），不应用于安全场景</li>
+            <li><strong>现有用途</strong>：文件完整性校验、非安全场景的数据指纹、缓存键生成</li>
+          </ul>
+
+          <h4>SHA 安全散列算法</h4>
+          <p>SHA（Secure Hash Algorithm）是由 NIST 发布的一系列哈希算法标准。</p>
+          <table class="ts-info-table">
+            <thead>
+              <tr><th>算法</th><th>输出长度</th><th>安全性</th><th>状态</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>SHA-1</td><td>160 位 / 40 字符</td><td>已被攻破（2017 年 Google SHAttered）</td><td>已弃用，不推荐</td></tr>
+              <tr><td>SHA-256</td><td>256 位 / 64 字符</td><td>目前安全</td><td>广泛使用（TLS、区块链、数字证书）</td></tr>
+              <tr><td>SHA-384</td><td>384 位 / 96 字符</td><td>目前安全</td><td>高安全需求场景</td></tr>
+              <tr><td>SHA-512</td><td>512 位 / 128 字符</td><td>目前安全</td><td>高安全需求场景</td></tr>
+            </tbody>
+          </table>
+
+          <h4>AES 高级加密标准</h4>
+          <p>AES（Advanced Encryption Standard）是目前最广泛使用的对称加密算法，由 NIST 于 2001 年发布，取代了 DES。AES 基于 Rijndael 算法，支持 128/192/256 位密钥长度。</p>
+
+          <h4>AES 工作模式</h4>
+          <table class="ts-info-table">
+            <thead>
+              <tr><th>模式</th><th>全称</th><th>特点</th><th>是否需要 IV</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>ECB</td><td>Electronic Codebook</td><td>最简单，相同明文块产生相同密文块，不推荐</td><td>否</td></tr>
+              <tr><td>CBC</td><td>Cipher Block Chaining</td><td>每块与前一块密文异或后加密，最常用</td><td>是</td></tr>
+              <tr><td>CTR</td><td>Counter</td><td>将块密码转为流密码，支持并行加密</td><td>是（Nonce）</td></tr>
+              <tr><td>CFB</td><td>Cipher Feedback</td><td>将块密码转为流密码，支持小于块大小的数据</td><td>是</td></tr>
+            </tbody>
+          </table>
+
+          <h4>填充方式</h4>
+          <ul>
+            <li><strong>PKCS7</strong>：填充 n 个字节，每个字节值为 n（最常用，RFC 5652）</li>
+            <li><strong>ZeroPadding</strong>：用 0x00 填充至块大小，无法区分数据末尾的 0x00</li>
+            <li><strong>NoPadding</strong>：不填充，要求输入数据长度必须是块大小（16 字节）的整数倍</li>
+          </ul>
+
+          <h4>安全建议</h4>
+          <ul>
+            <li>密码存储应使用专用算法（bcrypt、scrypt、Argon2），而非 MD5/SHA</li>
+            <li>AES 加密推荐使用 CBC 或 GCM 模式，避免使用 ECB</li>
+            <li>IV 应为随机生成，每次加密使用不同的 IV</li>
+            <li>密钥长度推荐 256 位以获得最高安全性</li>
+          </ul>
         </div>
       </div>
     </div>
