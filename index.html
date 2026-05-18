@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>嵌入式开发工具箱</title>
+  <title>青空工具箱</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="stylesheet" href="css/style.css">
   <!-- crypto-js 用于 MD5/SHA/AES，断网时可替换为 lib/crypto-js.min.js -->
@@ -14,7 +14,7 @@
   <!-- 顶部导航栏 -->
   <header class="header">
     <div class="header-inner">
-      <span class="logo">&#9881; 嵌入式开发工具箱</span>
+      <span class="logo">&#9881; 青空工具箱</span>
       <span class="header-sub">在线计算 &middot; 浏览器本地运行 &middot; 无需服务器</span>
     </div>
   </header>
@@ -27,6 +27,7 @@
       <button class="category-tab" data-category="encoding">编码转换</button>
       <button class="category-tab" data-category="string">字符串处理</button>
       <button class="category-tab" data-category="crypto">哈希/加密</button>
+      <button class="category-tab" data-category="timestamp">时间戳</button>
     </div>
 
     <!-- ==================== 数据校验类 ==================== -->
@@ -532,12 +533,139 @@
         </div>
       </div>
     </div>
+
+    <!-- ==================== 时间戳工具类 ==================== -->
+    <div class="category-content" data-category="timestamp">
+      <div class="sub-tabs" id="subTabs-timestamp">
+        <button class="sub-tab active" data-tool="ts-current">当前时间戳</button>
+        <button class="sub-tab" data-tool="ts-convert">时间戳转换</button>
+        <button class="sub-tab" data-tool="ts-calc">时间戳计算</button>
+      </div>
+
+      <!-- 当前时间戳 -->
+      <div class="tool-panel active" data-tool="ts-current">
+        <div class="card">
+          <div class="card-title">当前时间戳</div>
+          <div class="ts-live-display">
+            <div class="ts-live-row">
+              <span class="ts-live-label">Unix 时间戳（秒）</span>
+              <span class="ts-live-value" id="ts-live-sec">-</span>
+              <button class="copy-btn" style="position:static;opacity:1;" onclick="Utils.copy('ts-live-sec')">复制</button>
+            </div>
+            <div class="ts-live-row">
+              <span class="ts-live-label">Unix 时间戳（毫秒）</span>
+              <span class="ts-live-value" id="ts-live-ms">-</span>
+              <button class="copy-btn" style="position:static;opacity:1;" onclick="Utils.copy('ts-live-ms')">复制</button>
+            </div>
+            <div class="ts-live-row">
+              <span class="ts-live-label">UTC 时间</span>
+              <span class="ts-live-value" id="ts-live-utc">-</span>
+            </div>
+            <div class="ts-live-row">
+              <span class="ts-live-label">本地时间</span>
+              <span class="ts-live-value" id="ts-live-local">-</span>
+            </div>
+            <div class="ts-live-row">
+              <span class="ts-live-label">ISO 8601</span>
+              <span class="ts-live-value" id="ts-live-iso">-</span>
+              <button class="copy-btn" style="position:static;opacity:1;" onclick="Utils.copy('ts-live-iso')">复制</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 时间戳转换 -->
+      <div class="tool-panel" data-tool="ts-convert">
+        <div class="card">
+          <div class="card-title">时间戳 ↔ 日期时间 互转</div>
+
+          <!-- 时间戳 → 日期 -->
+          <div class="input-group">
+            <label>时间戳转日期时间</label>
+            <div class="input-row" style="margin-bottom:0;">
+              <div class="input-group flex-1" style="margin-bottom:0;">
+                <input type="text" id="ts-to-date-input" placeholder="输入时间戳，如 1700000000">
+              </div>
+              <div class="input-group" style="margin-bottom:0;">
+                <div class="radio-group">
+                  <label><input type="radio" name="ts-unit" value="s" checked> 秒(s)</label>
+                  <label><input type="radio" name="ts-unit" value="ms"> 毫秒(ms)</label>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-primary" onclick="TimestampTools.tsToDate()">转换</button>
+            <button class="btn btn-outline" onclick="TimestampTools.fillNowTs()">填入当前时间戳</button>
+          </div>
+          <div class="result-area">
+            <div class="result-label">转换结果</div>
+            <div class="result-box" id="ts-to-date-result" style="white-space:pre-wrap;">-</div>
+            <button class="copy-btn" onclick="Utils.copy('ts-to-date-result')">复制</button>
+          </div>
+
+          <hr style="margin:24px 0;border:none;border-top:1px dashed #e5e7eb;">
+
+          <!-- 日期 → 时间戳 -->
+          <div class="input-group">
+            <label>日期时间转时间戳</label>
+            <div class="input-row" style="margin-bottom:0;">
+              <div class="input-group flex-1" style="margin-bottom:0;">
+                <input type="text" id="ts-date-input" placeholder="2024-01-01 00:00:00">
+              </div>
+            </div>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-primary" onclick="TimestampTools.dateToTs()">转换</button>
+            <button class="btn btn-outline" onclick="TimestampTools.fillNowDate()">填入当前时间</button>
+            <button class="btn btn-secondary" onclick="TimestampTools.clearConvert()">清空</button>
+          </div>
+          <div class="result-area">
+            <div class="result-label">转换结果</div>
+            <div class="result-box" id="ts-from-date-result" style="white-space:pre-wrap;">-</div>
+            <button class="copy-btn" onclick="Utils.copy('ts-from-date-result')">复制</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 时间戳计算 -->
+      <div class="tool-panel" data-tool="ts-calc">
+        <div class="card">
+          <div class="card-title">时间戳差值计算</div>
+          <div class="input-row">
+            <div class="input-group flex-1">
+              <label>开始时间戳</label>
+              <input type="text" id="ts-calc-start" placeholder="如 1700000000">
+            </div>
+            <div class="input-group flex-1">
+              <label>结束时间戳</label>
+              <input type="text" id="ts-calc-end" placeholder="如 1700086400">
+            </div>
+          </div>
+          <div class="input-group">
+            <label>单位</label>
+            <div class="radio-group">
+              <label><input type="radio" name="ts-calc-unit" value="s" checked> 秒(s)</label>
+              <label><input type="radio" name="ts-calc-unit" value="ms"> 毫秒(ms)</label>
+            </div>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-primary" onclick="TimestampTools.calcDiff()">计算差值</button>
+            <button class="btn btn-secondary" onclick="TimestampTools.clearCalc()">清空</button>
+          </div>
+          <div class="result-area">
+            <div class="result-label">差值结果</div>
+            <div class="result-box" id="ts-calc-result" style="white-space:pre-wrap;">-</div>
+          </div>
+        </div>
+      </div>
+    </div>
   </main>
 
   <!-- 页脚 -->
   <footer class="footer">
     <div class="footer-inner">
-      嵌入式开发工具箱 &middot; 所有计算在浏览器本地完成 &middot; 纯静态页面
+      青空工具箱 &middot; 所有计算在浏览器本地完成 &middot; 纯静态页面
     </div>
   </footer>
 
@@ -547,6 +675,7 @@
   <script src="js/tool-encoding.js"></script>
   <script src="js/tool-string.js"></script>
   <script src="js/tool-crypto.js"></script>
+  <script src="js/tool-timestamp.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

@@ -67,6 +67,15 @@
       }
     }
 
+    // 时间戳实时更新控制
+    if (typeof TimestampTools !== 'undefined') {
+      if (category === 'timestamp') {
+        TimestampTools.startLive();
+      } else {
+        TimestampTools.stopLive();
+      }
+    }
+
     // 保存到 localStorage
     saveState(category, tool || getDefaultTool(category));
     // 更新 Hash
@@ -100,7 +109,7 @@
 
   /** 获取每个分类的默认工具名 */
   function getDefaultTool(category) {
-    var defaults = { checksum: 'bcc', encoding: 'hexconv', string: 'charcount', crypto: 'md5' };
+    var defaults = { checksum: 'bcc', encoding: 'hexconv', string: 'charcount', crypto: 'md5', timestamp: 'ts-current' };
     return defaults[category] || '';
   }
 
@@ -152,13 +161,14 @@
       'bcc': 'checksum', 'crc': 'checksum', 'sum': 'checksum',
       'hexconv': 'encoding', 'base64': 'encoding', 'utf8': 'encoding',
       'charcount': 'string', 'bytecount': 'string', 'strlen': 'string',
-      'md5': 'crypto', 'sha': 'crypto', 'aes': 'crypto'
+      'md5': 'crypto', 'sha': 'crypto', 'aes': 'crypto',
+      'ts-current': 'timestamp', 'ts-convert': 'timestamp', 'ts-calc': 'timestamp'
     };
     if (map[toolName]) {
       return { category: map[toolName], tool: toolName };
     }
     // 尝试匹配分类名
-    var cats = ['checksum', 'encoding', 'string', 'crypto'];
+    var cats = ['checksum', 'encoding', 'string', 'crypto', 'timestamp'];
     if (cats.indexOf(toolName) >= 0) {
       return { category: toolName, tool: getDefaultTool(toolName) };
     }

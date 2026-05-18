@@ -381,6 +381,47 @@ body {
   margin-top: 32px;
 }
 
+/* ==================== 时间戳实时显示 ==================== */
+.ts-live-display {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.ts-live-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: #f9fafb;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+.ts-live-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  min-width: 140px;
+  flex-shrink: 0;
+}
+.ts-live-value {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  flex: 1;
+  user-select: all;
+}
+
+@media (max-width: 768px) {
+  .ts-live-row {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .ts-live-label {
+    min-width: 100%;
+  }
+}
+
 /* ==================== 响应式 ==================== */
 @media (max-width: 768px) {
   .header-sub { display: none; }
