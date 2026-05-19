@@ -10,13 +10,14 @@ var _radioGroups = {};
 
 function _mockElement(id) {
   if (!_elements[id]) {
+    var classList = { _list: [], contains: function(c){ return this._list.indexOf(c)>=0; },
+      add: function(c){ if(!this.contains(c)) this._list.push(c); },
+      remove: function(c){ var i=this._list.indexOf(c); if(i>=0) this._list.splice(i,1); },
+      toggle: function(c){ if(this.contains(c)) this.remove(c); else this.add(c); }
+    };
     _elements[id] = {
       _value: '', _text: '', _checked: false, _disabled: false,
-      _style: {}, _classList: { _list: [], contains: function(c){ return this._list.indexOf(c)>=0; },
-        add: function(c){ if(!this.contains(c)) this._list.push(c); },
-        remove: function(c){ var i=this._list.indexOf(c); if(i>=0) this._list.splice(i,1); },
-        toggle: function(c){ if(this.contains(c)) this.remove(c); else this.add(c); }
-      },
+      _style: {}, classList: classList,
       get value() { return this._value; },
       set value(v) { this._value = String(v); },
       get textContent() { return this._text; },
@@ -31,7 +32,9 @@ function _mockElement(id) {
       get innerHTML() { return this._innerHTML || ''; },
       set innerHTML(v) { this._innerHTML = v; },
       getAttribute: function(attr) { return this['_' + attr] || ''; },
-      addEventListener: function(){}
+      addEventListener: function(){},
+      querySelectorAll: function() { return []; },
+      contains: function() { return false; }
     };
   }
   return _elements[id];
@@ -52,8 +55,13 @@ var document = {
   querySelectorAll: function(selector) {
     return [];
   },
-  querySelector: function() { return null; },
-  createElement: function() { return { style: {}, value: '', select: function(){}, textContent: '', innerHTML: '' }; },
+  querySelector: function(sel) {
+    if (sel === '#bc-table tbody') {
+      return { innerHTML: '', appendChild: function(){} };
+    }
+    return null;
+  },
+  createElement: function(tag) { return { style: {}, value: '', select: function(){}, textContent: '', innerHTML: '', appendChild: function(){} }; },
   body: { appendChild: function(){}, removeChild: function(){} },
   readyState: 'complete',
   addEventListener: function(){}
@@ -164,11 +172,15 @@ var CryptoJS = {
 
 // WordArray 辅助函数
 function _waFromHex(hex) {
+  hex = hex.toLowerCase();
+  var sigBytes = hex.length / 2;
+  // Pad to multiple of 8 chars for word alignment
+  while (hex.length % 8 !== 0) hex += '0';
   var words = [];
   for (var i = 0; i < hex.length; i += 8) {
     words.push(parseInt(hex.substring(i, i + 8), 16) | 0);
   }
-  return { words: words, sigBytes: hex.length / 2 };
+  return { words: words, sigBytes: sigBytes };
 }
 
 function _waToHex(wa) {
@@ -248,9 +260,9 @@ function _aesEncrypt(data, key, opts) {
     var encrypted = Buffer.concat([cipher.update(dataBuf), cipher.final()]);
     return {
       ciphertext: {
+        words: [], sigBytes: encrypted.length,
         toString: function(enc) {
-          if (enc === CryptoJS.enc.Hex) return encrypted.toString('hex');
-          return encrypted.toString('base64');
+          return encrypted.toString('hex');
         }
       },
       toString: function() { return encrypted.toString('base64'); }
@@ -310,6 +322,14 @@ for (var fi = 0; fi < files.length; fi++) {
   code = code.replace(/\bconst\b/g, 'var');
   allCode += '\n// ===== ' + files[fi] + ' =====\n' + code;
 }
+
+// 在 eval 之前，先覆盖 Utils.debounce 使其同步执行（绕过 setTimeout）
+// 我们在 allCode 中将 debounce 实现替换为直接返回原函数
+allCode = allCode.replace(
+  /debounce:\s*function\s*\(fn,\s*delay\)\s*\{[^}]*var timer;[\s\S]*?return function\(\)\s*\{[\s\S]*?\};\s*\}/,
+  'debounce: function(fn, delay) { return fn; }'
+);
+
 eval(allCode);
 
 // ==================== 测试框架 ====================
@@ -454,7 +474,7 @@ section('ChecksumTools 模块');
   }
 })();
 
-// CRC 自定义参数测试
+// CRC 自定义参数测试 - 模拟 CRC-16/XMODEM (refin=false, refout=false, init=0)
 (function() {
   document.getElementById('crc-input')._value = '31 32 33 34 35 36 37 38 39';
   document.getElementById('crc-variant')._value = 'custom';
@@ -462,15 +482,11 @@ section('ChecksumTools 模块');
   document.getElementById('crc-poly')._value = '1021';
   document.getElementById('crc-init')._value = '0000';
   document.getElementById('crc-xorout')._value = '0000';
-  document.getElementById('crc-refin')._checked = true;
-  document.getElementById('crc-refout')._checked = true;
-  ChecksumTools.calcCRC();
-  var result = document.getElementById('crc-result')._text;
-  assert(result.indexOf('29B1') >= 0, 'CRC 自定义参数: 与 CCITT 一致');
-
-  // 清理
   document.getElementById('crc-refin')._checked = false;
   document.getElementById('crc-refout')._checked = false;
+  ChecksumTools.calcCRC();
+  var result = document.getElementById('crc-result')._text;
+  assert(result.indexOf('31C3') >= 0, 'CRC 自定义参数: XMODEM 期望 31C3' + (result.indexOf('31C3') >= 0 ? '' : ' (实际: ' + result + ')'));
 })();
 
 // 累加和测试
@@ -791,6 +807,217 @@ section('App 模块（标签切换）');
 (function() {
   assert(typeof window !== 'undefined', 'App: 模块加载成功');
   // Hash路由相关逻辑已在init中绑定
+})();
+
+// ==================== 进制转换测试 ====================
+section('EncodingTools 进制转换');
+
+(function() {
+  // 十进制 → 十六进制
+  document.getElementById('baseconv-input')._value = '255';
+  document.getElementById('baseconv-from')._value = '10';
+  document.getElementById('baseconv-to')._value = '16';
+  EncodingTools.baseConvert();
+  assertEqual(document.getElementById('baseconv-result')._text, 'FF', '进制转换: 255(10) → FF(16)');
+  assertEqual(document.getElementById('bc-bin')._text, '11111111', '进制转换: 255 → bin 11111111');
+  assertEqual(document.getElementById('bc-oct')._text, '377', '进制转换: 255 → oct 377');
+
+  // 二进制 → 十进制
+  document.getElementById('baseconv-input')._value = '11111111';
+  document.getElementById('baseconv-from')._value = '2';
+  document.getElementById('baseconv-to')._value = '10';
+  EncodingTools.baseConvert();
+  assertEqual(document.getElementById('baseconv-result')._text, '255', '进制转换: 11111111(2) → 255(10)');
+
+  // 十六进制 → 二进制
+  document.getElementById('baseconv-input')._value = 'FF';
+  document.getElementById('baseconv-from')._value = '16';
+  document.getElementById('baseconv-to')._value = '2';
+  EncodingTools.baseConvert();
+  assertEqual(document.getElementById('baseconv-result')._text, '11111111', '进制转换: FF(16) → 11111111(2)');
+
+  // 大数测试
+  document.getElementById('baseconv-input')._value = '18446744073709551615';
+  document.getElementById('baseconv-from')._value = '10';
+  document.getElementById('baseconv-to')._value = '16';
+  EncodingTools.baseConvert();
+  assertEqual(document.getElementById('baseconv-result')._text, 'FFFFFFFFFFFFFFFF', '进制转换: 大数 2^64-1 → FFFFFFFFFFFFFFFF');
+
+  // 零值
+  document.getElementById('baseconv-input')._value = '0';
+  document.getElementById('baseconv-from')._value = '10';
+  document.getElementById('baseconv-to')._value = '2';
+  EncodingTools.baseConvert();
+  assertEqual(document.getElementById('baseconv-result')._text, '0', '进制转换: 0(10) → 0(2)');
+
+  // 带前缀 0x
+  document.getElementById('baseconv-input')._value = '0xFF';
+  document.getElementById('baseconv-from')._value = '16';
+  document.getElementById('baseconv-to')._value = '10';
+  EncodingTools.baseConvert();
+  assertEqual(document.getElementById('baseconv-result')._text, '255', '进制转换: 0xFF → 255 (自动去前缀)');
+
+  // 无效输入
+  document.getElementById('baseconv-input')._value = 'GG';
+  document.getElementById('baseconv-from')._value = '16';
+  document.getElementById('baseconv-to')._value = '10';
+  EncodingTools.baseConvert();
+  assert(document.getElementById('baseconv-result')._text.indexOf('错误') >= 0, '进制转换: 无效输入报错');
+
+  // 空输入
+  document.getElementById('baseconv-input')._value = '';
+  EncodingTools.baseConvert();
+  assertEqual(document.getElementById('bc-bin')._text, '-', '进制转换: 空输入清空结果');
+
+  // 八进制 → 十进制
+  document.getElementById('baseconv-input')._value = '777';
+  document.getElementById('baseconv-from')._value = '8';
+  document.getElementById('baseconv-to')._value = '10';
+  EncodingTools.baseConvert();
+  assertEqual(document.getElementById('baseconv-result')._text, '511', '进制转换: 777(8) → 511(10)');
+
+  // 负数
+  document.getElementById('baseconv-input')._value = '-100';
+  document.getElementById('baseconv-from')._value = '10';
+  document.getElementById('baseconv-to')._value = '16';
+  EncodingTools.baseConvert();
+  assertEqual(document.getElementById('baseconv-result')._text, '-64', '进制转换: -100(10) → -64(16)');
+})();
+
+// ==================== TimestampTools 测试 ====================
+section('TimestampTools 模块');
+
+(function() {
+  // 加载 TimestampTools 模块
+  var tsCode = fs.readFileSync(__dirname + '/js/tool-timestamp.js', 'utf-8');
+  tsCode = tsCode.replace(/\bconst\b/g, 'var');
+  eval(tsCode);
+
+  // 初始化 radio 组
+  initRadioGroup('ts-unit', ['s', 'ms']);
+  initRadioGroup('ts-calc-unit', ['s', 'ms']);
+  setRadio('ts-unit', 's');
+  setRadio('ts-calc-unit', 's');
+
+  // 时间戳 → 日期
+  document.getElementById('ts-to-date-input')._value = '0';
+  setRadio('ts-unit', 's');
+  TimestampTools.tsToDate();
+  var result = document.getElementById('ts-to-date-result')._text;
+  assert(result.indexOf('1970') >= 0, '时间戳转换: 0 → 1970年');
+  assert(result.indexOf('ISO 8601') >= 0, '时间戳转换: 包含ISO格式');
+
+  // 已知时间戳
+  document.getElementById('ts-to-date-input')._value = '1700000000';
+  TimestampTools.tsToDate();
+  result = document.getElementById('ts-to-date-result')._text;
+  assert(result.indexOf('2023') >= 0, '时间戳转换: 1700000000 → 2023年');
+
+  // 毫秒模式
+  document.getElementById('ts-to-date-input')._value = '1700000000000';
+  setRadio('ts-unit', 'ms');
+  TimestampTools.tsToDate();
+  result = document.getElementById('ts-to-date-result')._text;
+  assert(result.indexOf('2023') >= 0, '时间戳转换: 毫秒模式 1700000000000 → 2023年');
+
+  // 无效输入
+  document.getElementById('ts-to-date-input')._value = 'abc';
+  TimestampTools.tsToDate();
+  result = document.getElementById('ts-to-date-result')._text;
+  assert(result.indexOf('错误') >= 0, '时间戳转换: 无效输入报错');
+
+  // 空输入
+  document.getElementById('ts-to-date-input')._value = '';
+  TimestampTools.tsToDate();
+  result = document.getElementById('ts-to-date-result')._text;
+  assert(result.indexOf('请输入') >= 0, '时间戳转换: 空输入提示');
+
+  // 日期 → 时间戳
+  document.getElementById('ts-date-input')._value = '2023-01-01 00:00:00';
+  TimestampTools.dateToTs();
+  result = document.getElementById('ts-from-date-result')._text;
+  assert(result.indexOf('时间戳') >= 0, '日期转时间戳: 输出包含时间戳');
+  assert(result.indexOf('1672') >= 0, '日期转时间戳: 2023-01-01 → 1672xxxxxxx');
+
+  // 无效日期
+  document.getElementById('ts-date-input')._value = 'not-a-date';
+  TimestampTools.dateToTs();
+  result = document.getElementById('ts-from-date-result')._text;
+  assert(result.indexOf('错误') >= 0, '日期转时间戳: 无效日期报错');
+
+  // 时间戳差值计算
+  document.getElementById('ts-calc-start')._value = '1700000000';
+  document.getElementById('ts-calc-end')._value = '1700086400';
+  setRadio('ts-calc-unit', 's');
+  TimestampTools.calcDiff();
+  result = document.getElementById('ts-calc-result')._text;
+  assert(result.indexOf('1 天') >= 0, '时间戳差值: 86400秒 = 1天');
+  assert(result.indexOf('86400') >= 0, '时间戳差值: 显示秒数');
+
+  // 差值空输入
+  document.getElementById('ts-calc-start')._value = '';
+  document.getElementById('ts-calc-end')._value = '';
+  TimestampTools.calcDiff();
+  result = document.getElementById('ts-calc-result')._text;
+  assert(result.indexOf('请输入') >= 0, '时间戳差值: 空输入提示');
+})();
+
+// ==================== ToolSearch 测试 ====================
+section('ToolSearch 模块');
+
+(function() {
+  // 确保 searchResults 元素存在
+  _mockElement('searchResults');
+  _mockElement('toolSearch');
+
+  // 加载 ToolSearch 模块
+  var searchCode = fs.readFileSync(__dirname + '/js/tool-search.js', 'utf-8');
+  searchCode = searchCode.replace(/\bconst\b/g, 'var');
+  eval(searchCode);
+
+  // 搜索 "时间戳" 应返回3个结果
+  document.getElementById('toolSearch')._value = '时间戳';
+  ToolSearch.onInput();
+  var html = document.getElementById('searchResults')._innerHTML || '';
+  var matchCount = (html.match(/search-item/g) || []).length;
+  assert(matchCount >= 3, '搜索: "时间戳" 返回 ≥3 个结果 (实际: ' + matchCount + ')');
+
+  // 搜索 "crc" 应返回CRC工具
+  document.getElementById('toolSearch')._value = 'crc';
+  ToolSearch.onInput();
+  html = document.getElementById('searchResults')._innerHTML || '';
+  assert(html.indexOf('CRC') >= 0, '搜索: "crc" 返回CRC相关结果');
+
+  // 搜索 "加密" 应返回AES和RSA
+  document.getElementById('toolSearch')._value = '加密';
+  ToolSearch.onInput();
+  html = document.getElementById('searchResults')._innerHTML || '';
+  assert(html.indexOf('AES') >= 0, '搜索: "加密" 包含AES');
+  assert(html.indexOf('RSA') >= 0, '搜索: "加密" 包含RSA');
+
+  // 搜索 "rsa" 应返回3个RSA工具
+  document.getElementById('toolSearch')._value = 'rsa';
+  ToolSearch.onInput();
+  html = document.getElementById('searchResults')._innerHTML || '';
+  var rsaCount = (html.match(/data-category="rsa"/g) || []).length;
+  assert(rsaCount >= 3, '搜索: "rsa" 返回 ≥3 个RSA结果 (实际: ' + rsaCount + ')');
+
+  // 搜索 "进制" 应返回进制转换
+  document.getElementById('toolSearch')._value = '进制';
+  ToolSearch.onInput();
+  html = document.getElementById('searchResults')._innerHTML || '';
+  assert(html.indexOf('进制转换') >= 0, '搜索: "进制" 包含进制转换');
+
+  // 空搜索不显示结果
+  document.getElementById('toolSearch')._value = '';
+  ToolSearch.onInput();
+  assert(!_elements['searchResults'].classList.contains('visible'), '搜索: 空输入隐藏结果');
+
+  // 无匹配搜索
+  document.getElementById('toolSearch')._value = 'zzzzzzz';
+  ToolSearch.onInput();
+  html = document.getElementById('searchResults')._innerHTML || '';
+  assert(html.indexOf('未找到') >= 0, '搜索: 无匹配显示"未找到"');
 })();
 
 // ==================== 测试结果汇总 ====================
