@@ -30,7 +30,12 @@ var ToolSearch = (function() {
     // 时间戳
     { name: '当前时间戳', keywords: ['时间戳', 'timestamp', 'unix', '当前时间', '实时', 'epoch'], category: 'timestamp', tool: 'ts-current' },
     { name: '时间戳转换', keywords: ['时间戳', 'timestamp', 'unix', '日期', '转换', '互转', 'date', '时间'], category: 'timestamp', tool: 'ts-convert' },
-    { name: '时间戳计算', keywords: ['时间戳', 'timestamp', '差值', '计算', '时间差', '间隔'], category: 'timestamp', tool: 'ts-calc' }
+    { name: '时间戳计算', keywords: ['时间戳', 'timestamp', '差值', '计算', '时间差', '间隔'], category: 'timestamp', tool: 'ts-calc' },
+
+    // RSA
+    { name: 'RSA 密钥对生成', keywords: ['rsa', '密钥', '公钥', '私钥', '生成', 'key', 'keypair', '非对称', 'pkcs'], category: 'rsa', tool: 'rsa-keygen' },
+    { name: 'RSA 加密/解密', keywords: ['rsa', '加密', '解密', '公钥加密', '私钥解密', 'encrypt', 'decrypt', '非对称', 'oaep'], category: 'rsa', tool: 'rsa-encrypt' },
+    { name: 'RSA 签名/验签', keywords: ['rsa', '签名', '验签', 'sign', 'verify', '数字签名', '非对称', 'pss', 'pkcs1'], category: 'rsa', tool: 'rsa-sign' }
   ];
 
   // 分类名称映射
@@ -39,7 +44,8 @@ var ToolSearch = (function() {
     'encoding': '编码转换',
     'string': '字符串处理',
     'crypto': '哈希/加密',
-    'timestamp': '时间戳'
+    'timestamp': '时间戳',
+    'rsa': 'RSA'
   };
 
   var searchInput = null;

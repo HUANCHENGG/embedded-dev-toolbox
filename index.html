@@ -32,6 +32,7 @@
       <button class="category-tab" data-category="string">字符串处理</button>
       <button class="category-tab" data-category="crypto">哈希/加密</button>
       <button class="category-tab" data-category="timestamp">时间戳</button>
+      <button class="category-tab" data-category="rsa">RSA</button>
     </div>
 
     <!-- ==================== 数据校验类 ==================== -->
@@ -1044,6 +1045,229 @@
         </div>
       </div>
     </div>
+
+    <!-- ==================== RSA 工具类 ==================== -->
+    <div class="category-content" data-category="rsa">
+      <div class="sub-tabs" id="subTabs-rsa">
+        <button class="sub-tab active" data-tool="rsa-keygen">密钥对生成</button>
+        <button class="sub-tab" data-tool="rsa-encrypt">加密/解密</button>
+        <button class="sub-tab" data-tool="rsa-sign">签名/验签</button>
+      </div>
+
+      <!-- RSA 密钥对生成 -->
+      <div class="tool-panel active" data-tool="rsa-keygen">
+        <div class="card">
+          <div class="card-title">RSA 密钥对生成</div>
+          <div class="input-row">
+            <div class="input-group flex-1">
+              <label>密钥长度</label>
+              <select id="rsa-keygen-bits">
+                <option value="1024">1024 bit</option>
+                <option value="2048" selected>2048 bit</option>
+                <option value="4096">4096 bit</option>
+              </select>
+            </div>
+            <div class="input-group flex-1">
+              <label>密钥格式</label>
+              <select id="rsa-keygen-format">
+                <option value="pkcs8" selected>PKCS#8</option>
+                <option value="pkcs1">PKCS#1</option>
+              </select>
+            </div>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-primary" onclick="RSATools.generateKeyPair()">生成密钥对</button>
+          </div>
+          <div class="result-area">
+            <div class="result-label">公钥 (Public Key)</div>
+            <textarea id="rsa-pubkey" rows="6" readonly placeholder="点击生成后显示公钥"></textarea>
+            <button class="copy-btn" onclick="Utils.copyTextArea('rsa-pubkey')">复制</button>
+          </div>
+          <div class="result-area">
+            <div class="result-label">私钥 (Private Key)</div>
+            <textarea id="rsa-privkey" rows="10" readonly placeholder="点击生成后显示私钥"></textarea>
+            <button class="copy-btn" onclick="Utils.copyTextArea('rsa-privkey')">复制</button>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-outline" onclick="RSATools.useGeneratedKeys()">将生成的密钥填入加密/签名工具</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RSA 加密/解密 -->
+      <div class="tool-panel" data-tool="rsa-encrypt">
+        <div class="card">
+          <div class="card-title">RSA 公钥加密 / 私钥解密</div>
+          <div class="input-group">
+            <label>公钥 (PEM 格式)</label>
+            <textarea id="rsa-enc-pubkey" rows="5" placeholder="-----BEGIN PUBLIC KEY-----&#10;...&#10;-----END PUBLIC KEY-----"></textarea>
+          </div>
+          <div class="input-group">
+            <label>私钥 (PEM 格式)</label>
+            <textarea id="rsa-enc-privkey" rows="5" placeholder="-----BEGIN PRIVATE KEY-----&#10;...&#10;-----END PRIVATE KEY-----"></textarea>
+          </div>
+          <div class="input-group">
+            <label>输入数据</label>
+            <textarea id="rsa-enc-input" rows="4" placeholder="加密时输入明文，解密时输入密文（Base64）"></textarea>
+          </div>
+          <div class="input-row">
+            <div class="input-group flex-1">
+              <label>填充模式</label>
+              <select id="rsa-enc-padding">
+                <option value="oaep" selected>OAEP (推荐)</option>
+                <option value="pkcs1">PKCS#1 v1.5</option>
+              </select>
+            </div>
+            <div class="input-group flex-1">
+              <label>OAEP 哈希算法</label>
+              <select id="rsa-enc-hash">
+                <option value="SHA-256" selected>SHA-256</option>
+                <option value="SHA-1">SHA-1</option>
+                <option value="SHA-384">SHA-384</option>
+                <option value="SHA-512">SHA-512</option>
+              </select>
+            </div>
+          </div>
+          <div class="input-group">
+            <label>输出编码</label>
+            <div class="radio-group">
+              <label><input type="radio" name="rsa-enc-encoding" value="base64" checked> Base64</label>
+              <label><input type="radio" name="rsa-enc-encoding" value="hex"> Hex</label>
+            </div>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-primary" onclick="RSATools.encrypt()">公钥加密</button>
+            <button class="btn btn-primary" onclick="RSATools.decrypt()">私钥解密</button>
+            <button class="btn btn-secondary" onclick="RSATools.clearEncrypt()">清空</button>
+          </div>
+          <div class="result-area">
+            <div class="result-label">输出结果</div>
+            <textarea id="rsa-enc-output" rows="4" readonly placeholder="结果将显示在这里"></textarea>
+            <button class="copy-btn" onclick="Utils.copyTextArea('rsa-enc-output')">复制</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RSA 签名/验签 -->
+      <div class="tool-panel" data-tool="rsa-sign">
+        <div class="card">
+          <div class="card-title">RSA 私钥签名 / 公钥验签</div>
+          <div class="input-group">
+            <label>私钥 (PEM 格式，签名用)</label>
+            <textarea id="rsa-sign-privkey" rows="5" placeholder="-----BEGIN PRIVATE KEY-----&#10;...&#10;-----END PRIVATE KEY-----"></textarea>
+          </div>
+          <div class="input-group">
+            <label>公钥 (PEM 格式，验签用)</label>
+            <textarea id="rsa-sign-pubkey" rows="5" placeholder="-----BEGIN PUBLIC KEY-----&#10;...&#10;-----END PUBLIC KEY-----"></textarea>
+          </div>
+          <div class="input-group">
+            <label>待签名/验签数据</label>
+            <textarea id="rsa-sign-data" rows="3" placeholder="输入需要签名或验签的原始数据"></textarea>
+          </div>
+          <div class="input-row">
+            <div class="input-group flex-1">
+              <label>签名算法</label>
+              <select id="rsa-sign-algo">
+                <option value="RSASSA-PKCS1-v1_5" selected>RSASSA-PKCS1-v1_5</option>
+                <option value="RSA-PSS">RSA-PSS</option>
+              </select>
+            </div>
+            <div class="input-group flex-1">
+              <label>哈希算法</label>
+              <select id="rsa-sign-hash">
+                <option value="SHA-256" selected>SHA-256</option>
+                <option value="SHA-1">SHA-1</option>
+                <option value="SHA-384">SHA-384</option>
+                <option value="SHA-512">SHA-512</option>
+              </select>
+            </div>
+          </div>
+          <div class="input-group">
+            <label>签名值（验签时填入）</label>
+            <textarea id="rsa-sign-signature" rows="3" placeholder="验签时在此输入签名值（Base64）"></textarea>
+          </div>
+          <div class="input-group">
+            <label>签名编码</label>
+            <div class="radio-group">
+              <label><input type="radio" name="rsa-sign-encoding" value="base64" checked> Base64</label>
+              <label><input type="radio" name="rsa-sign-encoding" value="hex"> Hex</label>
+            </div>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-primary" onclick="RSATools.sign()">私钥签名</button>
+            <button class="btn btn-primary" onclick="RSATools.verify()">公钥验签</button>
+            <button class="btn btn-secondary" onclick="RSATools.clearSign()">清空</button>
+          </div>
+          <div class="result-area">
+            <div class="result-label">签名/验签结果</div>
+            <textarea id="rsa-sign-output" rows="4" readonly placeholder="结果将显示在这里"></textarea>
+            <button class="copy-btn" onclick="Utils.copyTextArea('rsa-sign-output')">复制</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RSA 知识介绍 -->
+      <div class="card ts-intro">
+        <div class="card-title">关于 RSA 非对称加密</div>
+        <div class="ts-intro-content">
+          <h4>什么是 RSA？</h4>
+          <p>RSA 是由 Ron Rivest、Adi Shamir 和 Leonard Adleman 于 1977 年提出的非对称加密算法，其安全性基于大整数分解的数学难题。RSA 使用一对密钥：公钥用于加密和验签，私钥用于解密和签名。</p>
+
+          <h4>密钥长度与安全性</h4>
+          <table class="ts-info-table">
+            <thead>
+              <tr><th>密钥长度</th><th>安全性</th><th>推荐用途</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>1024 bit</td><td>已不安全（2010 年后可被分解）</td><td>仅用于测试，不应用于生产</td></tr>
+              <tr><td>2048 bit</td><td>目前安全（预计安全至 2030 年）</td><td>一般用途推荐</td></tr>
+              <tr><td>4096 bit</td><td>高安全性</td><td>高安全需求、长期密钥</td></tr>
+            </tbody>
+          </table>
+
+          <h4>密钥格式说明</h4>
+          <ul>
+            <li><strong>PKCS#8</strong>：通用的私钥格式标准，头部为 BEGIN PRIVATE KEY，推荐使用</li>
+            <li><strong>PKCS#1</strong>：RSA 专用格式，头部为 BEGIN RSA PRIVATE KEY，较老的格式</li>
+            <li><strong>PEM</strong>：Base64 编码的密钥文本格式，带有 BEGIN/END 标记</li>
+            <li><strong>DER</strong>：二进制编码的密钥格式</li>
+          </ul>
+
+          <h4>填充模式</h4>
+          <table class="ts-info-table">
+            <thead>
+              <tr><th>模式</th><th>全称</th><th>安全性</th><th>说明</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>OAEP</td><td>Optimal Asymmetric Encryption Padding</td><td>推荐</td><td>更安全的填充方案，可证明安全性</td></tr>
+              <tr><td>PKCS#1 v1.5</td><td>RSAES-PKCS1-v1_5</td><td>存在已知攻击</td><td>兼容性好但存在 Bleichenbacher 攻击风险</td></tr>
+            </tbody>
+          </table>
+
+          <h4>RSA 加密数据长度限制</h4>
+          <p>RSA 加密的明文长度受密钥长度和填充方式限制：</p>
+          <ul>
+            <li><strong>OAEP (SHA-256)</strong>：最大明文 = 密钥字节数 - 66 字节（如 2048 位密钥最大加密 190 字节）</li>
+            <li><strong>PKCS#1 v1.5</strong>：最大明文 = 密钥字节数 - 11 字节（如 2048 位密钥最大加密 245 字节）</li>
+          </ul>
+          <p>对于大数据加密，通常使用 RSA 加密一个随机 AES 密钥，再用 AES 加密实际数据（混合加密）。</p>
+
+          <h4>签名算法</h4>
+          <ul>
+            <li><strong>RSASSA-PKCS1-v1_5</strong>：确定性签名，相同输入产生相同签名，兼容性最好</li>
+            <li><strong>RSA-PSS</strong>：概率性签名，相同输入每次签名不同，安全性更高（推荐）</li>
+          </ul>
+
+          <h4>典型应用场景</h4>
+          <ul>
+            <li><strong>HTTPS/TLS</strong>：服务器证书验证、密钥交换</li>
+            <li><strong>数字签名</strong>：代码签名、文档签名、JWT Token</li>
+            <li><strong>SSH</strong>：密钥认证登录</li>
+            <li><strong>加密通信</strong>：PGP/GPG 邮件加密</li>
+          </ul>
+        </div>
+      </div>
+    </div>
   </main>
 
   <!-- 页脚 -->
@@ -1060,6 +1284,7 @@
   <script src="js/tool-string.js"></script>
   <script src="js/tool-crypto.js"></script>
   <script src="js/tool-timestamp.js"></script>
+  <script src="js/tool-rsa.js"></script>
   <script src="js/tool-search.js"></script>
   <script src="js/app.js"></script>
 </body>

@@ -109,7 +109,7 @@
 
   /** 获取每个分类的默认工具名 */
   function getDefaultTool(category) {
-    var defaults = { checksum: 'bcc', encoding: 'hexconv', string: 'charcount', crypto: 'md5', timestamp: 'ts-current' };
+    var defaults = { checksum: 'bcc', encoding: 'hexconv', string: 'charcount', crypto: 'md5', timestamp: 'ts-current', rsa: 'rsa-keygen' };
     return defaults[category] || '';
   }
 
@@ -162,13 +162,14 @@
       'hexconv': 'encoding', 'baseconv': 'encoding', 'base64': 'encoding', 'utf8': 'encoding',
       'charcount': 'string', 'bytecount': 'string', 'strlen': 'string',
       'md5': 'crypto', 'sha': 'crypto', 'aes': 'crypto',
-      'ts-current': 'timestamp', 'ts-convert': 'timestamp', 'ts-calc': 'timestamp'
+      'ts-current': 'timestamp', 'ts-convert': 'timestamp', 'ts-calc': 'timestamp',
+      'rsa-keygen': 'rsa', 'rsa-encrypt': 'rsa', 'rsa-sign': 'rsa'
     };
     if (map[toolName]) {
       return { category: map[toolName], tool: toolName };
     }
     // 尝试匹配分类名
-    var cats = ['checksum', 'encoding', 'string', 'crypto', 'timestamp'];
+    var cats = ['checksum', 'encoding', 'string', 'crypto', 'timestamp', 'rsa'];
     if (cats.indexOf(toolName) >= 0) {
       return { category: toolName, tool: getDefaultTool(toolName) };
     }
