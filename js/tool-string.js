@@ -108,7 +108,115 @@ var StringTools = (function() {
       document.getElementById('sl-char').textContent = charLen;
       document.getElementById('sl-byte').textContent = byteLen;
       document.getElementById('sl-width').textContent = width;
-    }, 200)
+    }, 200),
+
+    // ==================== 大小写转换 ====================
+    caseConvert: function(mode) {
+      var input = document.getElementById('caseconv-input').value;
+      if (!input) {
+        document.getElementById('caseconv-output').value = '';
+        return;
+      }
+
+      var result = '';
+      switch (mode) {
+        case 'upper':
+          result = input.toUpperCase();
+          break;
+        case 'lower':
+          result = input.toLowerCase();
+          break;
+        case 'capitalize':
+          // 每个单词首字母大写
+          result = input.replace(/\b[a-z]/g, function(c) { return c.toUpperCase(); });
+          break;
+        case 'uncapitalize':
+          // 每个单词首字母小写
+          result = input.replace(/\b[A-Z]/g, function(c) { return c.toLowerCase(); });
+          break;
+        case 'sentence':
+          // 句子首字母大写：在 .!?: 后的第一个字母大写
+          result = input.toLowerCase().replace(/(^|[.!?:]\s*)([a-z])/g, function(m, p1, p2) {
+            return p1 + p2.toUpperCase();
+          });
+          break;
+        case 'title':
+          // 标题大小写 (APA Style)
+          var minorWords = ['a', 'an', 'the', 'and', 'but', 'or', 'for', 'nor',
+            'on', 'at', 'to', 'by', 'in', 'of', 'up', 'as', 'so', 'yet', 'off',
+            'if', 'per', 'via', 'out'];
+          var words = input.toLowerCase().split(/(\s+)/);
+          for (var i = 0; i < words.length; i++) {
+            var w = words[i];
+            if (/^\s+$/.test(w)) continue; // 保留空白
+            // 第一个和最后一个实际单词始终大写
+            var isFirst = true, isLast = true;
+            for (var j = 0; j < i; j++) { if (!/^\s+$/.test(words[j])) { isFirst = false; break; } }
+            for (var k = i + 1; k < words.length; k++) { if (!/^\s+$/.test(words[k])) { isLast = false; break; } }
+            if (isFirst || isLast || minorWords.indexOf(w) === -1) {
+              words[i] = w.charAt(0).toUpperCase() + w.slice(1);
+            }
+          }
+          result = words.join('');
+          break;
+        // 格式转换
+        case 'space2underscore':
+          result = input.replace(/ /g, '_');
+          break;
+        case 'space2hyphen':
+          result = input.replace(/ /g, '-');
+          break;
+        case 'underscore2camel':
+          // 下划线和空格转驼峰
+          result = input.replace(/[_\s]+([a-zA-Z])/g, function(m, c) { return c.toUpperCase(); });
+          break;
+        case 'camel2underscore':
+          result = input.replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase();
+          break;
+        case 'camel2space':
+          result = input.replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase();
+          break;
+        case 'underscore2hyphen':
+          result = input.replace(/_/g, '-');
+          break;
+        case 'hyphen2underscore':
+          result = input.replace(/-/g, '_');
+          break;
+        case 'underscore2space':
+          result = input.replace(/_/g, ' ');
+          break;
+        case 'underscore2dot':
+          result = input.replace(/_/g, '.');
+          break;
+        case 'dot2underscore':
+          result = input.replace(/\./g, '_');
+          break;
+        case 'space2newline':
+          result = input.replace(/ /g, '\n');
+          break;
+        case 'newline2space':
+          result = input.replace(/[\r\n]+/g, ' ');
+          break;
+        case 'clearSymbols':
+          result = input.replace(/[^a-zA-Z0-9\u4e00-\u9fff\s]/g, '');
+          break;
+        case 'clearSpaces':
+          result = input.replace(/ /g, '');
+          break;
+        case 'clearNewlines':
+          result = input.replace(/[\r\n]+/g, '');
+          break;
+        default:
+          result = input;
+      }
+
+      document.getElementById('caseconv-output').value = result;
+    },
+
+    clearCaseConv: function() {
+      document.getElementById('caseconv-input').value = '';
+      document.getElementById('caseconv-output').value = '';
+    }
   };
 
   /** HTML 转义 */

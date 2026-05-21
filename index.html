@@ -474,6 +474,7 @@
         <button class="sub-tab active" data-tool="charcount">字符数统计</button>
         <button class="sub-tab" data-tool="bytecount">字节数统计</button>
         <button class="sub-tab" data-tool="strlen">字符串长度</button>
+        <button class="sub-tab" data-tool="caseconv">大小写转换</button>
       </div>
 
       <!-- 字符数统计 -->
@@ -532,6 +533,53 @@
             <div class="stat-card stat-total"><div class="stat-num" id="sl-char">0</div><div class="stat-label">字符长度</div></div>
             <div class="stat-card stat-cn"><div class="stat-num" id="sl-byte">0</div><div class="stat-label">UTF-8字节</div></div>
             <div class="stat-card stat-en"><div class="stat-num" id="sl-width">0</div><div class="stat-label">显示宽度</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 大小写转换 -->
+      <div class="tool-panel" data-tool="caseconv">
+        <div class="card">
+          <div class="card-title">英文字母大小写转换</div>
+          <div class="input-group">
+            <label>输入文本</label>
+            <textarea id="caseconv-input" rows="5" placeholder="在此输入或粘贴英文文本..."></textarea>
+          </div>
+          <div class="btn-row" style="flex-wrap:wrap;">
+            <button class="btn btn-primary" onclick="StringTools.caseConvert('upper')">全大写 AB</button>
+            <button class="btn btn-primary" onclick="StringTools.caseConvert('lower')">全小写 ab</button>
+            <button class="btn btn-primary" onclick="StringTools.caseConvert('capitalize')">首字母大写 Aa Bb</button>
+            <button class="btn btn-primary" onclick="StringTools.caseConvert('uncapitalize')">首字母小写 aA bB</button>
+            <button class="btn btn-primary" onclick="StringTools.caseConvert('sentence')">句子首字母大写</button>
+            <button class="btn btn-primary" onclick="StringTools.caseConvert('title')">标题大小写</button>
+          </div>
+          <div class="input-group">
+            <label>格式转换</label>
+          </div>
+          <div class="btn-row" style="flex-wrap:wrap;">
+            <button class="btn btn-outline" onclick="StringTools.caseConvert('space2underscore')">空格→下划线</button>
+            <button class="btn btn-outline" onclick="StringTools.caseConvert('space2hyphen')">空格→中横线</button>
+            <button class="btn btn-outline" onclick="StringTools.caseConvert('underscore2camel')">下划线→驼峰</button>
+            <button class="btn btn-outline" onclick="StringTools.caseConvert('camel2underscore')">驼峰→下划线</button>
+            <button class="btn btn-outline" onclick="StringTools.caseConvert('camel2space')">驼峰→空格</button>
+            <button class="btn btn-outline" onclick="StringTools.caseConvert('underscore2hyphen')">下划线→中横线</button>
+            <button class="btn btn-outline" onclick="StringTools.caseConvert('hyphen2underscore')">中横线→下划线</button>
+            <button class="btn btn-outline" onclick="StringTools.caseConvert('underscore2space')">下划线→空格</button>
+            <button class="btn btn-outline" onclick="StringTools.caseConvert('underscore2dot')">下划线→小数点</button>
+            <button class="btn btn-outline" onclick="StringTools.caseConvert('dot2underscore')">小数点→下划线</button>
+            <button class="btn btn-outline" onclick="StringTools.caseConvert('space2newline')">空格→换行</button>
+            <button class="btn btn-outline" onclick="StringTools.caseConvert('newline2space')">换行→空格</button>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-secondary" onclick="StringTools.caseConvert('clearSymbols')">清除符号</button>
+            <button class="btn btn-secondary" onclick="StringTools.caseConvert('clearSpaces')">清除空格</button>
+            <button class="btn btn-secondary" onclick="StringTools.caseConvert('clearNewlines')">清除换行</button>
+            <button class="btn btn-secondary" onclick="StringTools.clearCaseConv()">清空</button>
+          </div>
+          <div class="result-area">
+            <div class="result-label">转换结果</div>
+            <textarea id="caseconv-output" rows="5" readonly placeholder="转换结果将显示在这里"></textarea>
+            <button class="copy-btn" onclick="Utils.copyTextArea('caseconv-output')">复制</button>
           </div>
         </div>
       </div>

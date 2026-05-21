@@ -21,6 +21,7 @@ var ToolSearch = (function() {
     { name: '字符数统计', keywords: ['字符', '统计', '计数', '中文', '英文', '数字', '标点', '字符串'], category: 'string', tool: 'charcount' },
     { name: '字节数统计', keywords: ['字节', '统计', 'byte', 'utf8', 'ascii', '字符串'], category: 'string', tool: 'bytecount' },
     { name: '字符串长度', keywords: ['长度', 'length', '字符串', '宽度', '显示宽度'], category: 'string', tool: 'strlen' },
+    { name: '大小写转换', keywords: ['大小写', '大写', '小写', 'uppercase', 'lowercase', '转换', '驼峰', 'camel', '下划线', '标题', 'title', '首字母'], category: 'string', tool: 'caseconv' },
 
     // 哈希/加密
     { name: 'MD5 消息摘要', keywords: ['md5', '哈希', 'hash', '摘要', '加密', '散列'], category: 'crypto', tool: 'md5' },
