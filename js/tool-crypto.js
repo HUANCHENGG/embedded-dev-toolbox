@@ -208,9 +208,18 @@ var CryptoTools = (function() {
           decrypted = CryptoJS.AES.decrypt(input, keyWA, params);
         }
 
-        var text = decrypted.toString(CryptoJS.enc.Utf8);
-        if (!text) {
+        var hexOut = decrypted.toString(CryptoJS.enc.Hex);
+        var text;
+        try {
+          text = decrypted.toString(CryptoJS.enc.Utf8);
+        } catch (e) {
+          text = '';
+        }
+        if (!text && !hexOut) {
           document.getElementById('aes-output').value = '解密失败：密钥或参数错误';
+        } else if (!text && hexOut) {
+          // 解密成功但结果非 UTF-8 文本，输出 Hex
+          document.getElementById('aes-output').value = hexOut;
         } else {
           document.getElementById('aes-output').value = text;
         }
