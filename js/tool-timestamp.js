@@ -50,6 +50,23 @@ var TimestampTools = (function() {
     return parts.join(' ');
   }
 
+  /**
+   * 显示转换结果区域的错误信息
+   * @param {string} wrapId 结果容器元素 ID
+   * @param {string} prefix 各行 span ID 前缀
+   * @param {string} msg 错误提示文本
+   */
+  function showCvtError(wrapId, prefix, msg) {
+    var wrap = document.getElementById(wrapId);
+    wrap.style.display = '';
+    var suffixes = (prefix === 'ts-cvt-')
+      ? ['local','utc','iso','sec','ms']
+      : ['sec','ms','local','iso'];
+    suffixes.forEach(function(s, i) {
+      document.getElementById(prefix + s).textContent = (i === 0) ? msg : '-';
+    });
+  }
+
   /** 更新实时时间戳显示 */
   function updateLive() {
     var now = new Date();
@@ -103,13 +120,13 @@ var TimestampTools = (function() {
     tsToDate: function() {
       var input = document.getElementById('ts-to-date-input').value.trim();
       if (!input) {
-        document.getElementById('ts-to-date-result').textContent = '请输入时间戳';
+        showCvtError('ts-to-date-result', 'ts-cvt-', '请输入时间戳');
         return;
       }
 
       var ts = parseInt(input, 10);
       if (isNaN(ts)) {
-        document.getElementById('ts-to-date-result').textContent = '错误：请输入有效的数字时间戳';
+        showCvtError('ts-to-date-result', 'ts-cvt-', '错误：请输入有效的数字时间戳');
         return;
       }
 
@@ -118,18 +135,17 @@ var TimestampTools = (function() {
       var date = new Date(msValue);
 
       if (isNaN(date.getTime())) {
-        document.getElementById('ts-to-date-result').textContent = '错误：无效的时间戳';
+        showCvtError('ts-to-date-result', 'ts-cvt-', '错误：无效的时间戳');
         return;
       }
 
-      var lines = [];
-      lines.push('本地时间：' + formatDateTime(date));
-      lines.push('UTC 时间：' + formatUTC(date));
-      lines.push('ISO 8601：' + date.toISOString());
-      lines.push('时间戳(秒)：' + Math.floor(msValue / 1000));
-      lines.push('时间戳(毫秒)：' + msValue);
-
-      document.getElementById('ts-to-date-result').textContent = lines.join('\n');
+      var resultWrap = document.getElementById('ts-to-date-result');
+      resultWrap.style.display = '';
+      document.getElementById('ts-cvt-local').textContent = formatDateTime(date);
+      document.getElementById('ts-cvt-utc').textContent = formatUTC(date);
+      document.getElementById('ts-cvt-iso').textContent = date.toISOString();
+      document.getElementById('ts-cvt-sec').textContent = Math.floor(msValue / 1000);
+      document.getElementById('ts-cvt-ms').textContent = msValue;
     },
 
     /** 填入当前时间戳 */
@@ -143,7 +159,7 @@ var TimestampTools = (function() {
     dateToTs: function() {
       var input = document.getElementById('ts-date-input').value.trim();
       if (!input) {
-        document.getElementById('ts-from-date-result').textContent = '请输入日期时间';
+        showCvtError('ts-from-date-result', 'ts-cvt2-', '请输入日期时间');
         return;
       }
 
@@ -170,20 +186,19 @@ var TimestampTools = (function() {
       }
 
       if (isNaN(date.getTime())) {
-        document.getElementById('ts-from-date-result').textContent = '错误：无法解析日期，请使用格式 YYYY-MM-DD HH:mm:ss';
+        showCvtError('ts-from-date-result', 'ts-cvt2-', '错误：无法解析日期，请使用格式 YYYY-MM-DD HH:mm:ss');
         return;
       }
 
       var ms = date.getTime();
       var sec = Math.floor(ms / 1000);
 
-      var lines = [];
-      lines.push('时间戳(秒)：' + sec);
-      lines.push('时间戳(毫秒)：' + ms);
-      lines.push('解析为本地时间：' + formatDateTime(date));
-      lines.push('ISO 8601：' + date.toISOString());
-
-      document.getElementById('ts-from-date-result').textContent = lines.join('\n');
+      var resultWrap = document.getElementById('ts-from-date-result');
+      resultWrap.style.display = '';
+      document.getElementById('ts-cvt2-sec').textContent = sec;
+      document.getElementById('ts-cvt2-ms').textContent = ms;
+      document.getElementById('ts-cvt2-local').textContent = formatDateTime(date);
+      document.getElementById('ts-cvt2-iso').textContent = date.toISOString();
     },
 
     /** 填入当前日期时间 */
@@ -194,9 +209,17 @@ var TimestampTools = (function() {
     /** 清空转换区 */
     clearConvert: function() {
       document.getElementById('ts-to-date-input').value = '';
-      document.getElementById('ts-to-date-result').textContent = '-';
       document.getElementById('ts-date-input').value = '';
-      document.getElementById('ts-from-date-result').textContent = '-';
+      var wrap1 = document.getElementById('ts-to-date-result');
+      wrap1.style.display = 'none';
+      ['ts-cvt-local','ts-cvt-utc','ts-cvt-iso','ts-cvt-sec','ts-cvt-ms'].forEach(function(id) {
+        document.getElementById(id).textContent = '-';
+      });
+      var wrap2 = document.getElementById('ts-from-date-result');
+      wrap2.style.display = 'none';
+      ['ts-cvt2-sec','ts-cvt2-ms','ts-cvt2-local','ts-cvt2-iso'].forEach(function(id) {
+        document.getElementById(id).textContent = '-';
+      });
     },
 
     // ==================== 时间戳差值计算 ====================

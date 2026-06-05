@@ -950,10 +950,32 @@
             <button class="btn btn-primary" onclick="TimestampTools.tsToDate()">转换</button>
             <button class="btn btn-outline" onclick="TimestampTools.fillNowTs()">填入当前时间戳</button>
           </div>
-          <div class="result-area">
-            <div class="result-label">转换结果</div>
-            <div class="result-box" id="ts-to-date-result" style="white-space:pre-wrap;">-</div>
-            <button class="copy-btn" onclick="Utils.copy('ts-to-date-result')">复制</button>
+          <div class="ts-live-display" id="ts-to-date-result" style="display:none;">
+            <div class="ts-live-row">
+              <span class="ts-live-label">本地时间</span>
+              <span class="ts-live-value" id="ts-cvt-local">-</span>
+              <button class="copy-btn" style="position:static;opacity:1;" onclick="Utils.copy('ts-cvt-local')">复制</button>
+            </div>
+            <div class="ts-live-row">
+              <span class="ts-live-label">UTC 时间</span>
+              <span class="ts-live-value" id="ts-cvt-utc">-</span>
+              <button class="copy-btn" style="position:static;opacity:1;" onclick="Utils.copy('ts-cvt-utc')">复制</button>
+            </div>
+            <div class="ts-live-row">
+              <span class="ts-live-label">ISO 8601</span>
+              <span class="ts-live-value" id="ts-cvt-iso">-</span>
+              <button class="copy-btn" style="position:static;opacity:1;" onclick="Utils.copy('ts-cvt-iso')">复制</button>
+            </div>
+            <div class="ts-live-row">
+              <span class="ts-live-label">时间戳（秒）</span>
+              <span class="ts-live-value" id="ts-cvt-sec">-</span>
+              <button class="copy-btn" style="position:static;opacity:1;" onclick="Utils.copy('ts-cvt-sec')">复制</button>
+            </div>
+            <div class="ts-live-row">
+              <span class="ts-live-label">时间戳（毫秒）</span>
+              <span class="ts-live-value" id="ts-cvt-ms">-</span>
+              <button class="copy-btn" style="position:static;opacity:1;" onclick="Utils.copy('ts-cvt-ms')">复制</button>
+            </div>
           </div>
 
           <hr style="margin:24px 0;border:none;border-top:1px dashed #e5e7eb;">
@@ -972,10 +994,27 @@
             <button class="btn btn-outline" onclick="TimestampTools.fillNowDate()">填入当前时间</button>
             <button class="btn btn-secondary" onclick="TimestampTools.clearConvert()">清空</button>
           </div>
-          <div class="result-area">
-            <div class="result-label">转换结果</div>
-            <div class="result-box" id="ts-from-date-result" style="white-space:pre-wrap;">-</div>
-            <button class="copy-btn" onclick="Utils.copy('ts-from-date-result')">复制</button>
+          <div class="ts-live-display" id="ts-from-date-result" style="display:none;">
+            <div class="ts-live-row">
+              <span class="ts-live-label">时间戳（秒）</span>
+              <span class="ts-live-value" id="ts-cvt2-sec">-</span>
+              <button class="copy-btn" style="position:static;opacity:1;" onclick="Utils.copy('ts-cvt2-sec')">复制</button>
+            </div>
+            <div class="ts-live-row">
+              <span class="ts-live-label">时间戳（毫秒）</span>
+              <span class="ts-live-value" id="ts-cvt2-ms">-</span>
+              <button class="copy-btn" style="position:static;opacity:1;" onclick="Utils.copy('ts-cvt2-ms')">复制</button>
+            </div>
+            <div class="ts-live-row">
+              <span class="ts-live-label">本地时间</span>
+              <span class="ts-live-value" id="ts-cvt2-local">-</span>
+              <button class="copy-btn" style="position:static;opacity:1;" onclick="Utils.copy('ts-cvt2-local')">复制</button>
+            </div>
+            <div class="ts-live-row">
+              <span class="ts-live-label">ISO 8601</span>
+              <span class="ts-live-value" id="ts-cvt2-iso">-</span>
+              <button class="copy-btn" style="position:static;opacity:1;" onclick="Utils.copy('ts-cvt2-iso')">复制</button>
+            </div>
           </div>
         </div>
       </div>
