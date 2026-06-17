@@ -2,6 +2,8 @@
 .vscode/
 .idea/
 .claude/
+.playwright-mcp/
+.playwright-mcp/
 
 # OS
 Thumbs.db
