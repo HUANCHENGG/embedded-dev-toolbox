@@ -584,6 +584,36 @@ section('EncodingTools 模块');
   document.getElementById('b64-url')._checked = false;
 })();
 
+// Base64 文件上传/下载/自动编码测试
+(function() {
+  // 新方法存在性检查
+  assert(typeof EncodingTools.onBase64Input === 'function', 'EncodingTools: onBase64Input 方法存在');
+  assert(typeof EncodingTools.onBase64FileSelect === 'function', 'EncodingTools: onBase64FileSelect 方法存在');
+  assert(typeof EncodingTools.downloadBase64Result === 'function', 'EncodingTools: downloadBase64Result 方法存在');
+
+  // 自动编码：onBase64Input 应在输入后自动编码
+  document.getElementById('b64-input')._value = 'Test';
+  setRadio('b64-mode', 'text');
+  document.getElementById('b64-url')._checked = false;
+  EncodingTools.onBase64Input();
+  assertEqual(document.getElementById('b64-output')._value, 'VGVzdA==', 'Base64 自动编码: Test → VGVzdA==');
+
+  // 自动编码：空输入清空输出
+  document.getElementById('b64-input')._value = '';
+  EncodingTools.onBase64Input();
+  assertEqual(document.getElementById('b64-output')._value, '', 'Base64 自动编码: 空输入清空输出');
+
+  // clearBase64 清除文件上传状态
+  document.getElementById('b64-input')._value = 'abc';
+  document.getElementById('b64-output')._value = 'YWJj';
+  document.getElementById('b64-file')._value = 'fakepath';
+  document.getElementById('b64-file-info')._text = 'test.txt (1 KB)';
+  document.getElementById('b64-file-info').style = {};
+  EncodingTools.clearBase64();
+  assertEqual(document.getElementById('b64-input')._value, '', 'clearBase64: 清空输入');
+  assertEqual(document.getElementById('b64-output')._value, '', 'clearBase64: 清空输出');
+})();
+
 // UTF-8 转换测试
 (function() {
   // 文本模式

@@ -207,6 +207,79 @@ var EncodingTools = (function() {
     clearBase64: function() {
       document.getElementById('b64-input').value = '';
       document.getElementById('b64-output').value = '';
+      // 清除文件上传状态
+      document.getElementById('b64-file').value = '';
+      var info = document.getElementById('b64-file-info');
+      info.style.display = 'none';
+      info.textContent = '';
+    },
+
+    /** 输入框 oninput 事件 — 输入时自动编码 */
+    onBase64Input: function() {
+      var input = document.getElementById('b64-input').value;
+      if (!input) {
+        document.getElementById('b64-output').value = '';
+        return;
+      }
+      // 输入时自动执行编码
+      EncodingTools.base64Encode();
+    },
+
+    /**
+     * 文件上传处理 — 读取文件内容到输入框并自动编码
+     * @param {Event} event 文件选择事件
+     */
+    onBase64FileSelect: function(event) {
+      var file = event.target.files[0];
+      if (!file) return;
+
+      // 显示文件名和大小
+      var info = document.getElementById('b64-file-info');
+      var sizeStr = file.size < 1024 ? file.size + ' B' :
+                    file.size < 1048576 ? (file.size / 1024).toFixed(1) + ' KB' :
+                    (file.size / 1048576).toFixed(2) + ' MB';
+      info.textContent = file.name + ' (' + sizeStr + ')';
+      info.style.display = 'inline';
+
+      var mode = Utils.getRadioValue('b64-mode');
+      var reader = new FileReader();
+
+      if (mode === 'hex') {
+        // Hex 模式：读取为 ArrayBuffer 再转 Hex 字符串
+        reader.onload = function(e) {
+          var bytes = new Uint8Array(e.target.result);
+          document.getElementById('b64-input').value = Utils.bytesToHex(bytes);
+          EncodingTools.base64Encode();
+        };
+        reader.readAsArrayBuffer(file);
+      } else {
+        // 文本模式：直接读取文本
+        reader.onload = function(e) {
+          document.getElementById('b64-input').value = e.target.result;
+          EncodingTools.base64Encode();
+        };
+        reader.readAsText(file);
+      }
+    },
+
+    /** 下载 Base64 输出结果为文件 */
+    downloadBase64Result: function() {
+      var output = document.getElementById('b64-output').value;
+      if (!output) return;
+
+      var mode = Utils.getRadioValue('b64-mode');
+      var filename = (mode === 'hex') ? 'base64_result.hex' : 'base64_result.txt';
+      var mimeType = (mode === 'hex') ? 'application/octet-stream' : 'text/plain';
+
+      var blob = new Blob([output], { type: mimeType + ';charset=utf-8' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
     },
 
     // ==================== 进制转换 ====================

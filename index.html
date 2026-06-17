@@ -339,7 +339,12 @@
           <div class="card-title">Base64 编码 / 解码</div>
           <div class="input-group">
             <label>输入</label>
-            <textarea id="b64-input" rows="4" placeholder="输入文本或Hex数据"></textarea>
+            <textarea id="b64-input" rows="4" placeholder="输入文本或Hex数据" oninput="EncodingTools.onBase64Input()"></textarea>
+            <div style="margin-top:6px;">
+              <input type="file" id="b64-file" style="display:none;" onchange="EncodingTools.onBase64FileSelect(event)">
+              <button class="btn btn-outline" style="padding:4px 12px;font-size:12px;" onclick="document.getElementById('b64-file').click()">&#128193; 上传文件</button>
+              <span id="b64-file-info" class="file-info" style="display:none;"></span>
+            </div>
           </div>
           <div class="input-row">
             <div class="input-group">
@@ -362,6 +367,9 @@
             <div class="result-label">输出</div>
             <textarea id="b64-output" rows="4" readonly placeholder="结果将显示在这里"></textarea>
             <button class="copy-btn" onclick="Utils.copyTextArea('b64-output')">复制</button>
+          </div>
+          <div class="btn-row" style="margin-top:8px;">
+            <button class="btn btn-outline" onclick="EncodingTools.downloadBase64Result()">&#128190; 下载结果</button>
           </div>
         </div>
       </div>
