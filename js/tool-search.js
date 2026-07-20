@@ -32,6 +32,7 @@ var ToolSearch = (function() {
     { name: '当前时间戳', keywords: ['时间戳', 'timestamp', 'unix', '当前时间', '实时', 'epoch'], category: 'timestamp', tool: 'ts-current' },
     { name: '时间戳转换', keywords: ['时间戳', 'timestamp', 'unix', '日期', '转换', '互转', 'date', '时间'], category: 'timestamp', tool: 'ts-convert' },
     { name: '时间戳计算', keywords: ['时间戳', 'timestamp', '差值', '计算', '时间差', '间隔'], category: 'timestamp', tool: 'ts-calc' },
+    { name: '世界时间', keywords: ['世界时间', '世界时钟', '时区', 'timezone', 'world', 'clock', '客户', '哥伦比亚', '意大利', '当地时间', '夏令时', 'utc'], category: 'timestamp', tool: 'ts-world' },
 
     // RSA
     { name: 'RSA 密钥对生成', keywords: ['rsa', '密钥', '公钥', '私钥', '生成', 'key', 'keypair', '非对称', 'pkcs'], category: 'rsa', tool: 'rsa-keygen' },

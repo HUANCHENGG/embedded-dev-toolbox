@@ -930,49 +930,50 @@ section('TimestampTools 模块');
   setRadio('ts-calc-unit', 's');
 
   // 时间戳 → 日期
+  // 注：257184d 起结果改为逐行 span（ts-cvt-*），须读各 span 而非整块容器
   document.getElementById('ts-to-date-input')._value = '0';
   setRadio('ts-unit', 's');
   TimestampTools.tsToDate();
-  var result = document.getElementById('ts-to-date-result')._text;
+  var result = document.getElementById('ts-cvt-utc')._text;
   assert(result.indexOf('1970') >= 0, '时间戳转换: 0 → 1970年');
-  assert(result.indexOf('ISO 8601') >= 0, '时间戳转换: 包含ISO格式');
+  assert(document.getElementById('ts-cvt-iso')._text.indexOf('1970-01-01T00:00:00') >= 0, '时间戳转换: ISO格式正确');
 
   // 已知时间戳
   document.getElementById('ts-to-date-input')._value = '1700000000';
   TimestampTools.tsToDate();
-  result = document.getElementById('ts-to-date-result')._text;
+  result = document.getElementById('ts-cvt-utc')._text;
   assert(result.indexOf('2023') >= 0, '时间戳转换: 1700000000 → 2023年');
 
   // 毫秒模式
   document.getElementById('ts-to-date-input')._value = '1700000000000';
   setRadio('ts-unit', 'ms');
   TimestampTools.tsToDate();
-  result = document.getElementById('ts-to-date-result')._text;
+  result = document.getElementById('ts-cvt-utc')._text;
   assert(result.indexOf('2023') >= 0, '时间戳转换: 毫秒模式 1700000000000 → 2023年');
 
-  // 无效输入
+  // 无效输入（错误信息写入第一行 span，即 ts-cvt-local）
   document.getElementById('ts-to-date-input')._value = 'abc';
   TimestampTools.tsToDate();
-  result = document.getElementById('ts-to-date-result')._text;
+  result = document.getElementById('ts-cvt-local')._text;
   assert(result.indexOf('错误') >= 0, '时间戳转换: 无效输入报错');
 
   // 空输入
   document.getElementById('ts-to-date-input')._value = '';
   TimestampTools.tsToDate();
-  result = document.getElementById('ts-to-date-result')._text;
+  result = document.getElementById('ts-cvt-local')._text;
   assert(result.indexOf('请输入') >= 0, '时间戳转换: 空输入提示');
 
-  // 日期 → 时间戳
+  // 日期 → 时间戳（结果为逐行 span ts-cvt2-*）
   document.getElementById('ts-date-input')._value = '2023-01-01 00:00:00';
   TimestampTools.dateToTs();
-  result = document.getElementById('ts-from-date-result')._text;
-  assert(result.indexOf('时间戳') >= 0, '日期转时间戳: 输出包含时间戳');
-  assert(result.indexOf('1672') >= 0, '日期转时间戳: 2023-01-01 → 1672xxxxxxx');
+  result = document.getElementById('ts-cvt2-sec')._text;
+  assert(/^\d{10}$/.test(result), '日期转时间戳: 输出10位秒级时间戳');
+  assert(result.indexOf('1672') === 0, '日期转时间戳: 2023-01-01 → 1672xxxxxxx');
 
-  // 无效日期
+  // 无效日期（错误信息写入第一行 span，即 ts-cvt2-sec）
   document.getElementById('ts-date-input')._value = 'not-a-date';
   TimestampTools.dateToTs();
-  result = document.getElementById('ts-from-date-result')._text;
+  result = document.getElementById('ts-cvt2-sec')._text;
   assert(result.indexOf('错误') >= 0, '日期转时间戳: 无效日期报错');
 
   // 时间戳差值计算
@@ -990,6 +991,49 @@ section('TimestampTools 模块');
   TimestampTools.calcDiff();
   result = document.getElementById('ts-calc-result')._text;
   assert(result.indexOf('请输入') >= 0, '时间戳差值: 空输入提示');
+
+  // ========== 世界时间 ==========
+  // 用固定时间戳验证时区换算，不依赖运行时刻
+  // 1700000000000 ms = UTC 2023-11-14 22:13:20（北半球冬季，无夏令时）
+  var winterMs = 1700000000000;
+
+  // 中国 UTC+8 → 11-15 06:13:20
+  var cn = TimestampTools.getZoneDisplay('Asia/Shanghai', winterMs);
+  assertEqual(cn.offset, 'UTC+8', '世界时间: 中国偏移 UTC+8');
+  assertEqual(cn.hour, 6, '世界时间: 中国当地 6 点');
+  assert(cn.time.indexOf('11-15') >= 0, '世界时间: 中国日期跨到 11-15');
+
+  // 哥伦比亚 UTC-5（全年无夏令时）→ 11-14 17:13:20
+  var co = TimestampTools.getZoneDisplay('America/Bogota', winterMs);
+  assertEqual(co.offset, 'UTC-5', '世界时间: 哥伦比亚偏移 UTC-5');
+  assertEqual(co.hour, 17, '世界时间: 哥伦比亚当地 17 点');
+  assert(co.status.indexOf('工作时间') >= 0, '世界时间: 哥伦比亚 17 点为工作时间');
+
+  // 意大利冬令时 UTC+1 → 23:13:20（深夜）
+  var itWinter = TimestampTools.getZoneDisplay('Europe/Rome', winterMs);
+  assertEqual(itWinter.offset, 'UTC+1', '世界时间: 意大利冬令时 UTC+1');
+  assert(itWinter.status.indexOf('深夜') >= 0, '世界时间: 意大利 23 点为深夜');
+
+  // 1689000000000 ms = UTC 2023-07-10 14:40:00 → 意大利夏令时 UTC+2
+  var summerMs = 1689000000000;
+  var itSummer = TimestampTools.getZoneDisplay('Europe/Rome', summerMs);
+  assertEqual(itSummer.offset, 'UTC+2', '世界时间: 意大利夏令时 UTC+2');
+  assertEqual(itSummer.hour, 16, '世界时间: 意大利夏令时当地 16 点');
+  assert(itSummer.status.indexOf('工作时间') >= 0, '世界时间: 意大利 16 点为工作时间');
+
+  // 印度半小时时区 UTC+5:30 → 夏季时刻 20:10（清醒时段）
+  var ind = TimestampTools.getZoneDisplay('Asia/Kolkata', summerMs);
+  assertEqual(ind.offset, 'UTC+5:30', '世界时间: 印度偏移 UTC+5:30');
+  assert(ind.status.indexOf('清醒') >= 0, '世界时间: 印度 20 点为清醒时段');
+
+  // 渲染：mock 环境下 ts-world-list 元素存在即可产出 HTML
+  TimestampTools.renderWorldClock();
+  var worldHtml = document.getElementById('ts-world-list')._innerHTML || '';
+  assert(worldHtml.indexOf('哥伦比亚') >= 0, '世界时间渲染: 包含哥伦比亚');
+  assert(worldHtml.indexOf('意大利') >= 0, '世界时间渲染: 包含意大利');
+  assert(worldHtml.indexOf('★') >= 0, '世界时间渲染: 客户带★标记');
+  var rowCount = (worldHtml.match(/ts-live-row/g) || []).length;
+  assert(rowCount >= 11, '世界时间渲染: ≥11 个城市 (实际: ' + rowCount + ')');
 })();
 
 // ==================== ToolSearch 测试 ====================

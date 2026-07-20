@@ -538,6 +538,31 @@ body {
   }
 }
 
+/* ==================== 世界时间 ==================== */
+.ts-world-hint {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin: 0 0 16px;
+  line-height: 1.7;
+}
+.ts-world-offset {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-secondary);
+  min-width: 76px;
+  flex-shrink: 0;
+}
+.ts-world-status {
+  font-size: 13px;
+  font-weight: 600;
+  min-width: 90px;
+  flex-shrink: 0;
+  text-align: right;
+}
+.ts-world-work { color: #16a34a; }   /* 工作时间：绿 */
+.ts-world-awake { color: #d97706; }  /* 清醒时段：橙 */
+.ts-world-night { color: #9ca3af; }  /* 深夜：灰 */
+
 /* ==================== 时间戳介绍区 ==================== */
 .ts-intro {
   margin-top: 20px;

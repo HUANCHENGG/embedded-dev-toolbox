@@ -162,7 +162,7 @@
       'hexconv': 'encoding', 'baseconv': 'encoding', 'base64': 'encoding', 'utf8': 'encoding',
       'charcount': 'string', 'bytecount': 'string', 'strlen': 'string', 'caseconv': 'string',
       'md5': 'crypto', 'sha': 'crypto', 'aes': 'crypto',
-      'ts-current': 'timestamp', 'ts-convert': 'timestamp', 'ts-calc': 'timestamp',
+      'ts-current': 'timestamp', 'ts-convert': 'timestamp', 'ts-calc': 'timestamp', 'ts-world': 'timestamp',
       'rsa-keygen': 'rsa', 'rsa-encrypt': 'rsa', 'rsa-sign': 'rsa'
     };
     if (map[toolName]) {

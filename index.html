@@ -900,6 +900,7 @@
         <button class="sub-tab active" data-tool="ts-current">当前时间戳</button>
         <button class="sub-tab" data-tool="ts-convert">时间戳转换</button>
         <button class="sub-tab" data-tool="ts-calc">时间戳计算</button>
+        <button class="sub-tab" data-tool="ts-world">世界时间</button>
       </div>
 
       <!-- 当前时间戳 -->
@@ -1057,6 +1058,17 @@
           <div class="result-area">
             <div class="result-label">差值结果</div>
             <div class="result-box" id="ts-calc-result" style="white-space:pre-wrap;">-</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 世界时间 -->
+      <div class="tool-panel" data-tool="ts-world">
+        <div class="card">
+          <div class="card-title">世界时间</div>
+          <p class="ts-world-hint">★ 为客户所在地。联系时段说明：● 工作时间（当地 9:00-18:00）、○ 清醒时段（当地 7:00-22:00）、✗ 深夜请勿打扰。时区偏移含夏令时，自动换算。</p>
+          <div class="ts-live-display" id="ts-world-list">
+            <!-- 由 TimestampTools.renderWorldClock() 每秒渲染 -->
           </div>
         </div>
       </div>
